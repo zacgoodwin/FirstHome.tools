@@ -1,0 +1,3 @@
+#!/bin/sh
+# Gate must be green before any commit (CLAUDE.md non-negotiable).
+node tools/gate.mjs

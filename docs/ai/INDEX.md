@@ -33,7 +33,6 @@ tools/gate.mjs fails if a knowledge file exists that isn't listed here
 ## AI process (docs/ai/)
 
 - docs/ai/SETUP.md — machine setup: prerequisites, bootstrap scripts, env notes.
-- docs/ai/BOOTSTRAP.md — first-session interview (exists only until initialized).
 - docs/ai/SKILLS.md — plugins and project agents; pack skills live in the session skill listing.
 - docs/ai/BUSINESS-RULES.md — non-obvious product rules (pricing, permissions, compliance). Read before touching billing, auth, or data-handling code.
 - docs/ai/TICKET-TEMPLATE.md — the six lint-enforced ticket sections + example.

@@ -15,8 +15,6 @@ action. A metric without a decision attached is decoration.
 
 ## Product outcomes
 
-TODO(bootstrap): one row per 90-day outcome from docs/STRATEGY.md, plus the
-kill-criteria triggers.
-
 | Metric | Source | Threshold | Action on breach |
 |---|---|---|---|
+| Active users (signup + >=1 active maintenance schedule) | app DB query (TODO: script once schema exists) | 100 by day 90 | review acquisition; no kill criteria (personal tool) |

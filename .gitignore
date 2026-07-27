@@ -9,6 +9,13 @@ graphify-out/
 # Dependency-generated skill drops (self-installing skills from packages)
 .agents/skills/
 
+# Stack: Node / SvelteKit / Vite
+node_modules/
+.svelte-kit/
+build/
+dist/
+vite.config.*.timestamp-*
+
 # Secrets. Never commit. See rules/SAFETY.md
 .env*
 .claude/credentials.md

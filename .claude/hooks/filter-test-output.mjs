@@ -4,9 +4,10 @@
 // output stays available by chaining anything past the bare runner (e.g.
 // `npm test 2>&1 | cat`): chained commands pass through untouched.
 //
-// TODO(bootstrap): the interview replaces TEST_RUNNERS with this project's
-// actual gate command, and SELF_CHECK with a command the new regex matches.
-const TEST_RUNNERS = /^(npm test|npx? vitest|pnpm test|bun test|pytest|go test|cargo test|rspec)/;
+// This project (SvelteKit 2 + Vitest via npm): filter only the noisy runners.
+// `node tools/gate.mjs` stays unfiltered — its output is already terse and
+// "GATE RED:" would not survive the FAIL/ERROR grep below.
+const TEST_RUNNERS = /^(npm test|npx? vitest)/;
 const SELF_CHECK = "npm test"; // must match TEST_RUNNERS; --check asserts it
 
 // Security guard: never rewrite (and thereby auto-approve) a command that

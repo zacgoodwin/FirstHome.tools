@@ -43,6 +43,14 @@ Open Claude Code in the repo. You should see gstack skills (/ship, /qa) and
 zstack skills (/z-setup) in the skill list, and the session should immediately
 offer the first-session interview (docs/ai/BOOTSTRAP.md).
 
+## Per-clone
+
+Wire the gate as a pre-commit hook (once per clone):
+
+```sh
+git config core.hooksPath tools/git-hooks
+```
+
 ## Optional tuning
 
 - Statusline: show context usage continuously (see /statusline).

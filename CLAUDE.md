@@ -1,14 +1,16 @@
-# TODO(bootstrap): Project Name
+# FirstHome.tools
 
-TODO(bootstrap): one-line description of what this product does and for whom.
-
-**If `docs/ai/BOOTSTRAP.md` exists, this project is uninitialized: read it and
-run the interview with the user before any other work.**
+Maintenance scheduling and reminder app that keeps homeowners (first-timers
+especially) from messing up their home. Reminders reach users as a subscribed
+ICS calendar feed; their calendar app does the reminding.
 
 ## Stack
 
-TODO(bootstrap): language, framework, package manager, run command — with
-exact versions (e.g. "Next.js 15 App Router", not "Next.js").
+- TypeScript 5, Node 22, npm
+- SvelteKit 2 (Svelte 5) — not yet scaffolded; first build ticket does it
+- Supabase (Postgres + auth); Supabase MCP connected
+- Reminder delivery: subscribed ICS feed (RFC 5545), no push/email infra
+- Run: `npm run dev` (once scaffolded)
 
 ## Map
 
@@ -17,8 +19,8 @@ rules/ behavior · docs/ strategy+user-guide+ai · .claude/ agents+skills+hooks
 
 ## Commands
 
-- Gate tests (free, deterministic, <2s, CI + pre-commit once wired): `TODO(bootstrap)`
-- Evals (paid, periodic, before ship + nightly): `TODO(bootstrap)`
+- Gate tests (free, deterministic, <2s, CI + pre-commit): `node tools/gate.mjs` (Vitest joins it once services exist)
+- Evals (paid, periodic, before ship + nightly): none yet (no latent behavior)
 
 ## Non-negotiables
 
@@ -61,8 +63,10 @@ Full knowledge index: docs/ai/INDEX.md. Load the file when the situation matches
 
 ## Estimation
 
-TODO(bootstrap): per-ticket Model + Model Effort defaults for this project.
-Until then, the rules/DELEGATION.md table governs.
+Defaults for this project (rules/DELEGATION.md table otherwise): Sonnet /
+medium for scoped CRUD and UI tickets; Opus / high for schema design,
+recurrence/timezone logic, and cross-service changes; Haiku / medium for
+mechanical sweeps.
 
 ## Landmines
 

@@ -5,23 +5,29 @@ strategy, scope, or prioritization decision.
 
 ## Vision
 
-TODO(bootstrap): what this product is and the world it creates, in 3 sentences.
+FirstHome.tools is a maintenance scheduling and reminder app that keeps
+homeowners from messing up their home. It turns the invisible upkeep calendar
+(filters, gutters, water heater flushes, seasonal checks) into scheduled,
+actionable reminders. Owners stop discovering problems after they become
+expensive.
 
 ## Users
 
-TODO(bootstrap): who this serves. Include the beachhead: the segment with the
-strongest fit, and the explicit qualification criteria that identify them.
+All homeowners. First-time buyers are the marketing angle and the tone
+calibration (assume no maintenance experience), but any owner who wants
+maintenance reminders qualifies. No segment gating.
 
 ## Measurable outcomes (90-day)
 
-TODO(bootstrap): the metrics that define success in 90 days. Each gets a row in
-docs/ai/HEALTH-METRICS.md.
+- 100 active users: signed-up homeowners with at least one maintenance
+  schedule active. Tracked in docs/ai/HEALTH-METRICS.md.
 
 ## Out of scope
 
-TODO(bootstrap): what this product deliberately does not do.
+- Home value / finance features: no mortgage, equity, insurance, or valuation.
+- Smart-home integration: no IoT sensors, no device APIs.
 
 ## Kill criteria
 
-TODO(bootstrap): the stop-or-pivot triggers, each tied to a metric in
-docs/ai/HEALTH-METRICS.md.
+None. This is a personal tool the owner wants for themselves; usefulness to
+the owner is the floor, growth is upside.

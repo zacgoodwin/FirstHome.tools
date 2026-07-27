@@ -16,9 +16,13 @@ owns those rules and they are not restated here.
 
 ## Project conventions
 
-TODO(bootstrap): naming patterns and file conventions for this project
-(component casing, test file naming, import style). Layout is fixed by the
-services-first contract above.
+- Components: PascalCase `.svelte` files; routes: SvelteKit kebab-case
+  directories under `src/routes/`.
+- Tests: `*.test.ts` next to the code under test (Vitest).
+- Imports: ESM only; `$lib/` alias inside the app; type-only imports use
+  `import type`.
+- Modules/utilities: kebab-case `.ts` filenames.
+Layout is fixed by the services-first contract above.
 
 ## Tech choice: search before building
 

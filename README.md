@@ -1,41 +1,24 @@
-# AIBootstrap
+# FirstHome.tools
 
-Template repository for AI-assisted application development. A repo born from
-this template carries the personas, rules, skills wiring, and folder structure
-for Claude Code to take a product from strategy to shipped, with a
-GitHub-board dev loop and token-efficient defaults.
+Maintenance scheduling and reminder app that keeps homeowners from messing up
+their home. Aimed at first-time buyers (assume zero maintenance experience),
+useful to any owner: pick your home's systems, get a schedule of filter
+changes, gutter cleanings, water-heater flushes, and seasonal checks.
 
-## Start a project
+Reminders are delivered as a subscribed ICS calendar feed: add the feed URL to
+Google/Apple/Outlook calendar once, and your calendar app does the reminding.
+No push notifications, no email infrastructure.
 
-1. Click **Use this template** on GitHub and clone your new repo.
-2. Once per machine: follow [docs/ai/SETUP.md](docs/ai/SETUP.md)
-   (`powershell -ExecutionPolicy Bypass -File bootstrap.ps1` on Windows,
-   `bash bootstrap.sh` elsewhere).
-3. Open Claude Code in the clone. It detects the first-session interview
-   ([docs/ai/BOOTSTRAP.md](docs/ai/BOOTSTRAP.md)), fills in strategy, stack,
-   design, and board, rewrites this README for your product, and deletes the
-   interview.
+## Stack
 
-## What's inside
+TypeScript 5 / Node 22 / npm, SvelteKit 2 (Svelte 5), Supabase (Postgres +
+auth). Web only. See CLAUDE.md for commands and scope.
 
-- **CLAUDE.md** — always-loaded brain, capped at 80 lines (gate-enforced);
-  routes to everything else on demand.
-- **rules/** — principles, coding, testing, workflow, delegation, autonomy,
-  safety, voice, token economy.
-- **.claude/agents/** — marketing, launch, product, sales, support, data
-  personas. Engineering personas come from the gstack skill pack.
-- **.claude/skills/** — project skills; graphify vendored for codebase
-  knowledge graphs.
-- **architecture/**, **services/**, **tools/**, **docs/** — the layout
-  contract; see [docs/ai/INDEX.md](docs/ai/INDEX.md) for the full map.
-- **tools/gate.mjs** — the template's own gate test (`node tools/gate.mjs`).
+Out of scope: home value / finance features, smart-home integration.
 
-## Pulling template improvements later
+## AI-assisted development
 
-Repos born from a template don't track it. To pull improvements:
-
-```sh
-git remote add template https://github.com/zacgoodwin/AIBootstrap.git
-git fetch template
-git cherry-pick <commit>
-```
+This repo is built with Claude Code on the AIBootstrap template. Machine
+setup: [docs/ai/SETUP.md](docs/ai/SETUP.md). The always-loaded brain is
+[CLAUDE.md](CLAUDE.md); strategy lives in
+[docs/STRATEGY.md](docs/STRATEGY.md). Gate tests: `node tools/gate.mjs`.
