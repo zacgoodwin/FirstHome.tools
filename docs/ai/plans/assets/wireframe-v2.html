@@ -1,0 +1,370 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>FirstHome.tools — Live Loop wireframe v2 (structural)</title>
+<style>
+  /* Same rough language as v1 on purpose: system fonts, gray lines, no color,
+     no brand. Aesthetic direction stays DEFERRED to /design-consultation per
+     DESIGN.md. This pass adds MISSING SCREENS AND STATES only. */
+  body { font-family: system-ui, sans-serif; background:#f4f4f4; margin:20px; color:#222; }
+  h1 { font-size:16px; font-weight:600; margin-bottom:4px; }
+  h3 { font-size:13px; margin:22px 0 0; letter-spacing:.5px; text-transform:uppercase; color:#555; }
+  .note { font-size:12px; color:#666; max-width:1000px; }
+  .row { display:flex; gap:20px; align-items:flex-start; margin-top:12px; flex-wrap:wrap; }
+  .phone { width:320px; background:#fff; border:2px solid #999; border-radius:12px; padding:14px; }
+  .phone.new { border-color:#333; }
+  .phone h2 { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:#888; margin:0 0 10px; }
+  .phone h2 .tag { background:#333; color:#fff; padding:1px 5px; border-radius:3px; letter-spacing:0; }
+  .hdr { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:6px; margin-bottom:8px; font-size:12px; }
+  .hdr strong { font-size:12px; }
+  .box { border:1px dashed #aaa; border-radius:6px; padding:10px; margin:8px 0; }
+  .btn { display:block; text-align:center; border:2px solid #444; border-radius:6px; padding:11px; font-weight:600; margin:8px 0; }
+  .btn.ghost { border:1px solid #999; font-weight:400; padding:8px; }
+  .btn.link { border:none; text-decoration:underline; font-weight:400; font-size:13px; padding:4px; }
+  .opt { border:1px solid #999; border-radius:6px; padding:11px 8px; margin:6px 0; min-height:22px; }
+  .opt.sel { border:2px solid #333; background:#eee; }
+  .opt .lead { font-weight:600; }
+  .opt small { color:#666; display:block; }
+  .task { border-bottom:1px solid #ddd; padding:6px 2px; font-size:13px; }
+  .task small { color:#777; display:block; }
+  .surprise { border:2px solid #333; border-radius:6px; padding:8px; margin:8px 0; font-size:13px; }
+  .surprise .kicker { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#555; }
+  .meta { font-size:11px; color:#777; }
+  .bar { border:1px solid #999; border-radius:20px; padding:8px 12px; font-size:12px; text-align:center; margin-top:10px; display:flex; justify-content:space-between; }
+  .warn { border:2px solid #333; font-size:12px; padding:10px; border-radius:6px; }
+  .headline { font-size:19px; font-weight:700; line-height:1.25; }
+  .anchor { font-size:26px; font-weight:700; }
+  input[type=text], textarea { width:100%; border:1px solid #aaa; border-radius:4px; padding:8px; font-size:13px; box-sizing:border-box; }
+  label.fld { display:block; font-size:11px; color:#555; margin-bottom:3px; }
+  .ann { font-size:11px; color:#444; background:#eaeaea; border-left:3px solid #777; padding:6px 8px; margin:6px 0; }
+  .skeleton { background:repeating-linear-gradient(90deg,#e8e8e8,#e8e8e8 10px,#f2f2f2 10px,#f2f2f2 20px); height:12px; border-radius:3px; margin:6px 0; }
+  .skeleton.short { width:55%; }
+  table.states { border-collapse:collapse; font-size:11px; margin-top:8px; background:#fff; }
+  table.states th, table.states td { border:1px solid #ccc; padding:4px 7px; text-align:left; vertical-align:top; }
+  table.states th { background:#eee; }
+</style>
+</head>
+<body>
+
+<h1>FirstHome.tools — Live Loop wireframe v2 (structural). Rough on purpose; no aesthetic decisions made here.</h1>
+<p class="note">
+v1 drew three screens: wizard, subscribe, mark-done. This pass adds the screens and states
+the loop can actually enter and that v1 left undrawn. Screens marked <strong>NEW</strong> did not
+exist in v1. Everything else is v1 restructured for hierarchy, not restyled.
+</p>
+
+<h3>Row A — the cold-visitor path (outreach link → subscribed)</h3>
+<div class="row">
+
+  <!-- SCREEN 0 — THE FRONT DOOR, merged with question 1 (D1).
+       Premise 4: the MVP is the recruiting instrument. This is the first thing a
+       stranger from an outreach post sees. D1 removed the separate landing page:
+       a tap and a decision that added no information. Hard rules applied: one
+       composition, one anchor, no card grid, no hero cards. -->
+  <div class="phone new">
+    <h2>0 — Landing + Q1 <span class="tag">NEW · D1</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">no account</span></div>
+    <div class="box">
+      <div class="headline">Your home needs about 19 things a year. You probably know 6.</div>
+      <div class="meta">6 questions · about 3 minutes · no signup</div>
+    </div>
+    <div class="box">
+      <strong>What kind of home is it?</strong>
+      <div class="opt"><span class="lead">House (detached)</span></div>
+      <div class="opt"><span class="lead">Townhouse</span><small>shared walls, own roof</small></div>
+      <div class="opt"><span class="lead">Condo / apartment</span><small>building handles the outside</small></div>
+    </div>
+    <div class="ann">D1: no separate landing page. The promise is 15 words so question 1
+    stays above the fold at 320px. Answering IS the call to action, so there is no
+    button here at all. One anchor, one job, no feature grid.</div>
+  </div>
+
+  <!-- SCREEN 1 — WIZARD, mobile default state.
+       v1 drew the plan panel EXPANDED and noted "collapsible on mobile" in a
+       comment. The collapsed state is the one 100% of phone users see first, so
+       it is drawn here. Dwelling gate is Q1 (plan open question #4). -->
+  <div class="phone">
+    <h2>1 — Wizard Q2, mobile default</h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">Question 2 of 6</span></div>
+    <div class="box">
+      <strong>Roughly when was it built?</strong>
+      <div class="opt"><span class="lead">Before 1980</span></div>
+      <div class="opt sel"><span class="lead">1980 to 2005</span></div>
+      <div class="opt"><span class="lead">After 2005</span></div>
+      <div class="opt"><span class="lead">I'm not sure</span></div>
+    </div>
+    <div class="btn">Next</div>
+    <div class="ann">The dwelling gate was question 1 on the landing screen, so a condo
+    owner is never asked about gutters or sump pumps. That answer already removed
+    those rules from the pool.</div>
+    <div class="bar"><span>Your plan: <strong>4 tasks</strong></span><span>show ▾</span></div>
+    <div class="meta">Collapsed by default on phones. Expands over the question, never pushes it off screen.</div>
+  </div>
+
+  <!-- SCREEN 1B — "NOT SURE" ASSIST.
+       v1 had "Not sure — help me tell" as one unstyled option with no destination.
+       This is the highest drop-off risk in the flow: a first-time owner genuinely
+       does not know what heats their house. -->
+  <div class="phone new">
+    <h2>1b — "I'm not sure" assist <span class="tag">NEW</span></h2>
+    <div class="hdr"><strong>How does your home get heat?</strong></div>
+    <div class="box">
+      <div class="meta">Go look at the box in your basement, garage, or closet.</div>
+      <div class="opt"><span class="lead">Metal box with a big duct on top</span><small>usually a furnace</small></div>
+      <div class="opt"><span class="lead">Outdoor unit that runs in winter too</span><small>usually a heat pump</small></div>
+      <div class="opt"><span class="lead">Tank with pipes, radiators in rooms</span><small>usually a boiler</small></div>
+      <div class="opt"><span class="lead">Heaters along the baseboards</span><small>electric baseboard</small></div>
+    </div>
+    <div class="btn ghost">Still not sure — skip for now</div>
+    <div class="ann">Decision: skip is allowed and non-blocking. Skipped answers produce a
+    "we couldn't tell" task the user can resolve later. Never dead-ends the wizard.</div>
+  </div>
+
+  <!-- SCREEN 1C — THE SURPRISE MOMENT.
+       Premise 1 calls this the acquisition moment; the <90s success metric measures
+       it. v1 rendered it as a gray box with a star, visually the least distinct
+       element on screen. Here it is the anchor of its own moment. -->
+  <div class="phone new">
+    <h2>1c — Surprise moment <span class="tag">NEW</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">Question 3 of 6</span></div>
+    <div class="surprise">
+      <div class="kicker">Most owners miss this one</div>
+      <div class="anchor" style="font-size:16px">Clean the dryer vent duct — yearly</div>
+      <p style="font-size:13px;margin:6px 0">Lint in the duct is a leading cause of house fires.</p>
+      <div class="meta">Source: NFPA · reviewed 2026-06</div>
+      <div class="btn ghost" style="margin-bottom:0">Got it</div>
+    </div>
+    <div class="meta">Then the next question slides in underneath.</div>
+    <div class="ann">Decision: the FIRST surprise gets its own beat, in place, before the
+    next question. Later surprises fold into the plan list without interrupting. One
+    interruption, not seven.</div>
+  </div>
+
+</div>
+
+<h3>Row B — the result, and the states v1 didn't draw</h3>
+<div class="row">
+
+  <!-- SCREEN 2 — RESULT → SUBSCRIBE, restructured.
+       v1 stacked 5 near-equal buttons and put the highest-stakes information (lose
+       this URL = redo the wizard) at the bottom in the smallest type. Rebuilt:
+       one primary action, one recovery block, everything else behind a disclosure. -->
+  <div class="phone">
+    <h2>2 — Result → subscribe (restructured)</h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">your plan</span></div>
+    <div class="box" style="text-align:center">
+      <div class="anchor">19 tasks</div>
+      <div style="font-size:14px">7 you probably didn't know about</div>
+    </div>
+    <div class="btn">Add to my calendar</div>
+    <div class="meta" style="text-align:center">Works in Apple Calendar, Google Calendar, Outlook</div>
+    <div class="warn">
+      <strong>Save your way back in</strong>
+      <div class="meta" style="margin:4px 0">There's no account. This link is the only way to edit your plan later.</div>
+      <div class="btn ghost" style="margin:4px 0">Email me the link</div>
+      <div class="btn link">Copy link instead</div>
+    </div>
+    <div class="box meta">Your 19 tasks ▾ &nbsp;·&nbsp; each shows why it applies + its source</div>
+    <div class="box meta">Other ways to keep this ▾ <br>Copy feed URL · Download .ics · Export JSON</div>
+    <div class="ann">Decisions: (1) subscribe is the only full-weight button; (2) the
+    no-account recovery is promoted above the fold and given an action, not a warning
+    label; (3) export/snapshot move into a disclosure — still day-one available per
+    premise 5, no longer competing with subscribe.</div>
+  </div>
+
+  <!-- SCREEN 2B — LOW/ZERO SURPRISE RESULT.
+       A condo owner can finish with few tasks and zero surprises. v1's headline
+       then reads "0 you probably didn't know about", which reads as a failure of
+       the product at the exact moment it asks for the subscribe. -->
+  <div class="phone new">
+    <h2>2b — Low/zero-surprise result <span class="tag">NEW</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">your plan</span></div>
+    <div class="box" style="text-align:center">
+      <div class="anchor">6 tasks</div>
+      <div style="font-size:14px">for a condo — your building handles the rest</div>
+    </div>
+    <div class="btn">Add to my calendar</div>
+    <div class="box">
+      <div class="meta">Not your job, and that's the point:</div>
+      <div class="task">Roof &amp; gutters <small>building</small></div>
+      <div class="task">Exterior &amp; grounds <small>building</small></div>
+    </div>
+    <div class="ann">Decision: when surprise count is low, the headline switches from
+    "what you didn't know" to "what you don't have to worry about". Never renders
+    "0 you probably didn't know about".</div>
+  </div>
+
+  <!-- SCREEN 3 — CALENDAR EVENT → MARK DONE, with identity + a way out.
+       v1's screen 3 had no header, no nav, no route back to the plan. Arriving cold
+       from a calendar event on a phone, the user could not tell what site this was
+       (trunk test failure). -->
+  <div class="phone">
+    <h2>3 — From calendar event (restructured)</h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">1 of 19 · see plan</span></div>
+    <div class="box">
+      <strong>Flush water heater (sediment)</strong>
+      <div class="meta">due this week · every 12 months</div>
+      <p style="font-size:13px">Why: sediment buildup shortens tank life and can cause overheating.</p>
+      <div class="meta">Source: manufacturer guidance · reviewed 2026-06</div>
+    </div>
+    <div class="btn">✓ Mark done</div>
+    <div class="box">
+      <label class="fld">Note (optional)</label>
+      <textarea rows="2"></textarea>
+      <label class="fld" style="margin-top:6px">Who did it</label>
+      <div class="meta">◉ me &nbsp; ○ a pro</div>
+    </div>
+    <div class="btn ghost">Snooze 2 weeks</div>
+    <div class="btn ghost">This doesn't apply to my home</div>
+    <div class="ann">Decisions: (1) header carries identity + a route to the full plan;
+    (2) note field starts empty (v1 showed prefilled sample text, which ships as a
+    placeholder-as-label bug); (3) labels sit outside the fields.</div>
+  </div>
+
+  <!-- SCREEN 3B — MARK-DONE SUCCESS.
+       This is the action the 30-day validation bar counts. v1 drew the button and
+       nothing after it. -->
+  <div class="phone new">
+    <h2>3b — Marked done <span class="tag">NEW</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">see plan</span></div>
+    <div class="box" style="text-align:center">
+      <div class="anchor" style="font-size:18px">Done — logged today</div>
+      <div class="meta">Next one due: <strong>March 2027</strong></div>
+    </div>
+    <div class="box">
+      <div class="meta">Coming up</div>
+      <div class="task">Replace HVAC filter <small>in 3 weeks</small></div>
+      <div class="task">Test smoke + CO alarms <small>in 6 days</small></div>
+    </div>
+    <div class="btn ghost">Undo</div>
+    <div class="ann">Decision: success confirms the write, states the next due date (proof
+    the schedule is alive), and offers Undo. No dead end, no bare toast.</div>
+  </div>
+
+</div>
+
+<h3>Row C — recovery, loading, and failure</h3>
+<div class="row">
+
+  <!-- SCREEN 4 — RETURN VISIT / LOST LINK.
+       Losing the edit URL costs a 3-minute wizard redo. v1 warned about it and drew
+       no recovery. -->
+  <div class="phone new">
+    <h2>4 — Lost your link <span class="tag">NEW</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong></div>
+    <div class="box">
+      <strong>That link isn't valid</strong>
+      <p style="font-size:13px">It may have been mistyped, or the plan was deleted.</p>
+    </div>
+    <div class="box">
+      <label class="fld">If you saved your link by email, we can resend it</label>
+      <input type="text" value="">
+      <div class="btn ghost">Send me my link</div>
+    </div>
+    <div class="btn">Start a new plan (3 minutes)</div>
+    <div class="ann">Decision: recovery is offered before the redo, and the redo is offered
+    with its honest cost. Email capture lives HERE and on screen 2 as an option — never
+    as a gate before the wizard (premise 7 / open question on the signup boundary).</div>
+  </div>
+
+  <!-- SCREEN 5 — PLAN BUILDING / LOADING.
+       The plan count updating live is the core interaction of the product and v1
+       specified no loading or transition behavior for it. -->
+  <div class="phone new">
+    <h2>5 — Plan building (loading) <span class="tag">NEW</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">Question 4 of 6</span></div>
+    <div class="box">
+      <strong>How does your home get heat?</strong>
+      <div class="opt sel"><span class="lead">Heat pump</span></div>
+      <div class="opt" style="opacity:.5"><span class="lead">Boiler / radiators</span></div>
+    </div>
+    <div class="bar"><span>Your plan: <strong>11 → 14 tasks</strong></span><span>show ▾</span></div>
+    <div class="box">
+      <div class="skeleton"></div><div class="skeleton short"></div>
+    </div>
+    <div class="ann">Decision: the count animates from old to new so the user SEES their
+    answer add tasks; the options stay visible and disabled rather than being replaced by
+    a spinner. If the server takes &gt;400ms, skeleton rows hold the plan list. Never a
+    full-screen spinner between questions.</div>
+  </div>
+
+  <!-- SCREEN 6 — FEED / SUBSCRIBE FAILURE.
+       Subscribing is the conversion event and every calendar client fails differently.
+       Undrawn in v1. -->
+  <div class="phone new">
+    <h2>6 — Subscribe didn't take <span class="tag">NEW</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">your plan</span></div>
+    <div class="box">
+      <strong>Nothing happened when you tapped?</strong>
+      <p style="font-size:13px">Some browsers block the calendar handoff. Copy your feed link and add it by hand.</p>
+      <input type="text" value="https://firsthome.tools/calendar/…ics">
+      <div class="btn ghost">Copy link</div>
+    </div>
+    <div class="box meta">Apple Calendar: File ▸ New Calendar Subscription ▾<br>Google Calendar: Other calendars ▸ From URL ▾</div>
+    <div class="ann">Decision: webcal:// handoff cannot be detected as failed, so the
+    fallback is always present under the primary button rather than shown on error.
+    Per-client instructions expand in place, no new page.</div>
+  </div>
+
+</div>
+
+<h3>Row D — desktop wizard (D16)</h3>
+<div class="row">
+  <!-- D16: desktop is not the mobile layout reflowed. The plan is always visible
+       beside the question, so the collapsed bar does not exist here and tasks
+       appear live next to the answer that produced them. -->
+  <div class="phone new" style="width:700px">
+    <h2>7 — Wizard, desktop 768px+ <span class="tag">NEW · D16</span></h2>
+    <div class="hdr"><strong>FirstHome.tools</strong><span class="meta">Question 3 of 6 &nbsp;·&nbsp; see plan</span></div>
+    <div style="display:flex; gap:16px; align-items:flex-start">
+      <div style="flex:1.1">
+        <div class="box">
+          <strong>How does your home get heat?</strong>
+          <div class="opt"><span class="lead">Forced-air furnace (gas)</span></div>
+          <div class="opt sel"><span class="lead">Heat pump</span></div>
+          <div class="opt"><span class="lead">Boiler / radiators</span></div>
+          <div class="opt"><span class="lead">Electric baseboard</span></div>
+          <div class="opt"><span class="lead">I'm not sure</span></div>
+        </div>
+        <div class="btn">Next</div>
+      </div>
+      <div style="flex:1">
+        <div class="meta">Your plan so far &nbsp;·&nbsp; <strong>14 tasks</strong></div>
+        <div class="box" style="margin-top:6px">
+          <div class="task">Replace HVAC filter <small>every 3 months</small></div>
+          <div class="task">Test smoke + CO alarms <small>monthly · NFPA</small></div>
+          <div class="task">Clean dryer vent duct <small>yearly · NFPA</small></div>
+          <div class="task">Flush water heater <small>every 12 months</small></div>
+          <div class="task">Service heat pump <small>yearly · just added</small></div>
+        </div>
+      </div>
+    </div>
+    <div class="ann">D16: two intentional layouts, not one that reflows. The plan is
+    always visible, so the collapsed bar and its expand interaction do not exist at
+    this width. The user watches tasks appear beside the answer that produced them,
+    which is the best available version of the core interaction and is physically
+    impossible on a 320px phone. The count still lives in an ARIA live region (D17).</div>
+  </div>
+</div>
+
+<h3>State coverage this wireframe now commits to</h3>
+<table class="states">
+<tr><th>Surface</th><th>Loading</th><th>Empty / zero</th><th>Error</th><th>Success</th><th>Partial</th></tr>
+<tr><td>Landing</td><td>static, no fetch</td><td>n/a</td><td>n/a</td><td>n/a</td><td>n/a</td></tr>
+<tr><td>Wizard question</td><td>screen 5: options disabled, count animates, skeleton rows &gt;400ms</td><td>n/a</td><td>answer failed to save: inline retry under the question, answer preserved</td><td>next question slides in</td><td>screen 1b skip: unanswered question yields a "we couldn't tell" task</td></tr>
+<tr><td>Live plan panel</td><td>skeleton rows</td><td>0 tasks so far: "answer a couple more and your plan starts filling in"</td><td>panel keeps last good state, shows "couldn't refresh"</td><td>count animates old → new</td><td>partial rules: shown with a "based on what you've told us" note</td></tr>
+<tr><td>Result page</td><td>skeleton headline + list</td><td>screen 2b: reframes to what the building handles</td><td>plan not found: screen 4</td><td>screen 2</td><td>skipped questions listed as "resolve later" tasks</td></tr>
+<tr><td>Subscribe</td><td>button disabled state</td><td>n/a</td><td>screen 6 fallback always present</td><td>no client callback exists: show "added? here's how to check"</td><td>n/a</td></tr>
+<tr><td>Mark done</td><td>button disabled state</td><td>n/a</td><td>write failed: keep the form, inline retry, never lose the note</td><td>screen 3b + next due date</td><td>already marked done by someone else on the shared calendar: "already logged today by someone with this link"</td></tr>
+<tr><td>Export / snapshot</td><td>button disabled state</td><td>n/a</td><td>download failed: link to retry</td><td>browser download, inline confirmation</td><td>n/a</td></tr>
+</table>
+
+<p class="note" style="margin-top:14px">
+Not decided here (deferred to /design-consultation at the first UI ticket): typeface,
+color, spacing scale, motion curves, iconography, illustration. Everything above is
+structure, hierarchy, and state coverage only.
+</p>
+
+</body>
+</html>

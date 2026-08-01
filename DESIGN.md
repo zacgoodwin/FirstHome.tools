@@ -4,9 +4,10 @@ Read this file before any visual or UI decision. Do not deviate without
 explicit approval. In QA mode, flag any code that doesn't match this file.
 
 Created by /design-consultation on 2026-07-31 (2 board rounds, 16-site
-competitive research, Codex + Claude outside voices). Approved variants:
-`~/.gstack/projects/zacgoodwin-FirstHome.tools/designs/design-system-20260731/`
-(A2 landing, A3 result, C2 platform — HTML + PNG are the visual reference).
+competitive research, Codex + Claude outside voices). Approved variants
+live in-repo: `docs/ai/plans/assets/design-system-20260731/` (A2 landing,
+A3 result, C2 platform — HTML + PNG are the visual reference; working
+copies also in `~/.gstack/projects/zacgoodwin-FirstHome.tools/designs/`).
 
 ## Product Context
 

@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hearth Almanac — A3: Result page (accordion + account)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6EEDF; --page:#FDF8ED; --ink:#2A211B; --ink-faded:#77685A;
+    --ember:#BC4B23; --cocoa:#6B4A32; --pine:#3D5C46; --hairline:#E2D5BE;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--paper); color:var(--ink); font-family:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",sans-serif; font-size:16px; line-height:1.55; width:1440px; min-height:900px; position:relative;}
+  .shell{max-width:1160px; margin:0 auto; padding:0 48px;}
+  header{display:flex; justify-content:space-between; align-items:baseline; padding:20px 0 14px; border-bottom:1px solid var(--hairline);}
+  .wordmark{font-family:Fraunces,serif; font-variation-settings:"opsz" 40,"SOFT" 80,"WONK" 1; font-weight:640; font-size:21px;}
+  .crumb{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--cocoa);}
+  .crumb .leaf{color:var(--ember);}
+  .masthead{display:grid; grid-template-columns:6fr 6fr; gap:56px; padding:48px 0 40px; align-items:start;}
+  h1{font-family:Fraunces,serif; font-variation-settings:"opsz" 144,"SOFT" 75,"WONK" 1; font-weight:560; font-size:52px; line-height:1.04; margin-bottom:16px;}
+  h1 .known{color:var(--ember);}
+  .dek{font-size:17px; color:var(--ink-faded); max-width:36ch; margin-bottom:28px;}
+  .cta{display:inline-block; background:var(--ember); color:var(--page); font-weight:700; font-size:17px; padding:15px 30px; border-radius:2px; text-decoration:none; box-shadow:3px 3px 0 var(--ink);}
+  .cta-sub{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-faded); margin-top:12px; letter-spacing:.04em;}
+  .keep{margin-top:28px; background:var(--page); border:1px solid var(--hairline); border-radius:6px; padding:16px 18px; max-width:400px;}
+  .keep b{font-size:15.5px;}
+  .keep p{font-size:13.5px; color:var(--ink-faded); margin:4px 0 10px;}
+  .btn2{display:inline-block; border:2px solid var(--ink); color:var(--ink); font-weight:700; font-size:14.5px; padding:9px 18px; border-radius:2px; text-decoration:none;}
+  .quiet-link{color:var(--cocoa); font-size:14px; text-decoration:underline; text-underline-offset:3px; margin-left:14px;}
+  /* accordion sheet */
+  .sheet{background:var(--page); border:1px solid var(--hairline); border-radius:6px; box-shadow:4px 4px 0 rgba(42,33,27,.9); padding:8px 24px 14px;}
+  .sheet-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding:14px 0 10px;}
+  .sheet-title{font-family:Fraunces,serif; font-variation-settings:"opsz" 40,"SOFT" 90; font-weight:620; font-size:19px;}
+  .sheet-no{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-faded); letter-spacing:.1em;}
+  .grp{border-bottom:1px solid var(--hairline);}
+  .grp:last-child{border-bottom:none;}
+  .grp-head{display:flex; align-items:baseline; gap:12px; padding:14px 2px; cursor:pointer;}
+  .grp-head .chev{color:var(--cocoa); font-size:12px; width:14px;}
+  .grp-head h3{font-family:Fraunces,serif; font-variation-settings:"opsz" 40,"SOFT" 90; font-size:16.5px; font-weight:620;}
+  .grp-head .count{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-faded); margin-left:auto;}
+  .grp-head .missed{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ember);}
+  .grp .body{padding:0 0 8px 26px;}
+  .task{padding:10px 2px 9px; border-top:1px dashed var(--hairline);}
+  .t-row{display:flex; justify-content:space-between; align-items:baseline; gap:12px;}
+  .t-name{font-weight:500; font-size:15.5px;}
+  .t-when{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--cocoa); white-space:nowrap;}
+  .t-src{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faded); margin-top:3px;}
+  .flag{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--page); background:var(--ember); border-radius:2px; padding:2px 6px; margin-left:8px; vertical-align:2px;}
+  .pageno{position:absolute; right:56px; bottom:34px; font-family:Fraunces,serif; font-variation-settings:"opsz" 144,"SOFT" 60; font-size:44px; color:var(--hairline); font-weight:600;}
+  .trust{margin-top:22px; font-size:13.5px; color:var(--ink-faded); max-width:44ch;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="wordmark">FirstHome.tools</div>
+    <div class="crumb"><span class="leaf">&#10047;</span> Autumn · Your almanac</div>
+  </header>
+
+  <div class="masthead">
+    <div>
+      <h1>19 tasks a year.<br><span class="known">7 most owners miss.</span></h1>
+      <p class="dek">Your home wrote its own almanac. Keep it in the calendar you already check.</p>
+      <a class="cta" href="#">Add to my calendar</a>
+      <div class="cta-sub">WORKS WITH APPLE · GOOGLE · OUTLOOK</div>
+
+      <div class="keep">
+        <b>Keep this almanac</b>
+        <p>A free account saves your home's almanac, tracks what you've done, and files your documents — so it's here next season.</p>
+        <a class="btn2" href="#">Create a free account</a>
+        <a class="quiet-link" href="#">Download the PDF instead</a>
+      </div>
+      <p class="trust">No account needed to use your calendar. Export or delete everything, any time.</p>
+    </div>
+
+    <div>
+      <div class="sheet">
+        <div class="sheet-head">
+          <div class="sheet-title">The Home on Birch Lane</div>
+          <div class="sheet-no">19 TASKS · BY AREA</div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-head"><span class="chev">▼</span><h3>Safety</h3><span class="missed">2 commonly missed</span><span class="count">4 tasks</span></div>
+          <div class="body">
+            <div class="task">
+              <div class="t-row"><span class="t-name">Clean dryer vent duct<span class="flag">commonly missed</span></span><span class="t-when">yearly</span></div>
+              <div class="t-src">Source: NFPA 211 · reviewed 2026-06</div>
+            </div>
+            <div class="task">
+              <div class="t-row"><span class="t-name">Test smoke + CO alarms</span><span class="t-when">monthly</span></div>
+              <div class="t-src">Source: NFPA 72 · reviewed 2026-06</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-head"><span class="chev">▼</span><h3>Systems</h3><span class="missed">3 commonly missed</span><span class="count">7 tasks</span></div>
+          <div class="body">
+            <div class="task">
+              <div class="t-row"><span class="t-name">Flush water heater<span class="flag">commonly missed</span></span><span class="t-when">every 12 mo</span></div>
+              <div class="t-src">Source: manufacturer guidance</div>
+            </div>
+            <div class="task">
+              <div class="t-row"><span class="t-name">Replace HVAC filter</span><span class="t-when">every 3 mo</span></div>
+              <div class="t-src">Source: manufacturer guidance</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grp">
+          <div class="grp-head"><span class="chev">▶</span><h3>Exterior</h3><span class="missed">2 commonly missed</span><span class="count">5 tasks</span></div>
+        </div>
+        <div class="grp">
+          <div class="grp-head"><span class="chev">▶</span><h3>Interior</h3><span class="count">3 tasks</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pageno">02</div>
+</div>
+</body>
+</html>

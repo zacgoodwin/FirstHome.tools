@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hearth Almanac — C2: This month (month + category views)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6EEDF; --page:#FDF8ED; --ink:#2A211B; --ink-faded:#77685A;
+    --ember:#BC4B23; --cocoa:#6B4A32; --pine:#3D5C46; --winter:#4A6B8A; --hairline:#E2D5BE;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--paper); color:var(--ink); font-family:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",sans-serif; font-size:16px; line-height:1.55; width:1440px; min-height:900px; display:grid; grid-template-columns:236px 1fr;}
+  .rail{border-right:1px solid var(--hairline); padding:24px 0 24px 40px; display:flex; flex-direction:column; gap:2px;}
+  .wordmark{font-family:Fraunces,serif; font-variation-settings:"opsz" 40,"SOFT" 85,"WONK" 1; font-weight:640; font-size:19px; margin-bottom:34px;}
+  .rail a{display:block; padding:9px 14px 9px 0; color:var(--ink-faded); text-decoration:none; font-size:15.5px;}
+  .rail a.on{color:var(--ink); font-weight:700; border-right:3px solid var(--ember); margin-right:-1px;}
+  .rail .tab-no{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em; color:var(--hairline); display:block;}
+  .rail .foot{margin-top:auto; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faded); padding-right:24px;}
+  main{padding:24px 56px 40px 44px; position:relative;}
+  .top{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--hairline); padding-bottom:14px; margin-bottom:30px;}
+  .season{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.13em; text-transform:uppercase; color:var(--winter);}
+  .addr{font-size:14px; color:var(--ink-faded);}
+  h1{font-family:Fraunces,serif; font-variation-settings:"opsz" 144,"SOFT" 90,"WONK" 1; font-weight:520; font-size:44px; line-height:1.05; margin-bottom:8px;}
+  .dek{color:var(--ink-faded); margin-bottom:24px; max-width:52ch;}
+  .dek b{color:var(--ink);}
+  /* view toggle */
+  .views{display:flex; gap:0; margin-bottom:26px; border:1.5px solid var(--cocoa); border-radius:2px; width:max-content; overflow:hidden;}
+  .views a{padding:8px 18px; font-size:14px; font-weight:600; color:var(--cocoa); text-decoration:none;}
+  .views a.on{background:var(--cocoa); color:var(--page);}
+  .cols{display:grid; grid-template-columns:1.5fr 1fr; gap:44px;}
+  .sec-cap{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:2px;}
+  .sec-cap h2{font-family:Fraunces,serif; font-variation-settings:"opsz" 40,"SOFT" 90; font-weight:620; font-size:18px;}
+  .sec-cap .mono{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faded);}
+  .task{display:grid; grid-template-columns:auto 1fr auto auto; gap:12px; padding:13px 0 12px; border-bottom:1px solid var(--hairline); align-items:baseline;}
+  .box{width:18px; height:18px; border:2px solid var(--cocoa); border-radius:2px; position:relative; top:2px;}
+  .box.done{background:var(--pine); border-color:var(--pine);}
+  .box.done::after{content:"✓"; color:var(--page); font-size:12px; position:absolute; top:-2px; left:2px; font-weight:700;}
+  .t-name{font-weight:500;}
+  .t-name small{display:block; font-size:13px; color:var(--ink-faded); font-weight:400;}
+  .t-name .cite{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase;}
+  .due{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--cocoa); white-space:nowrap;}
+  .due.hot{color:var(--ember); font-weight:700;}
+  .open{color:var(--cocoa); font-size:13px; text-decoration:underline; text-underline-offset:3px; white-space:nowrap;}
+  .month-strip{display:flex; gap:6px; margin:26px 0 0; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.06em;}
+  .month-strip span{padding:5px 9px; border:1px solid var(--hairline); border-radius:2px; color:var(--ink-faded);}
+  .month-strip span.on{background:var(--ink); color:var(--page); border-color:var(--ink);}
+  .month-strip span.dot::after{content:" ·"; color:var(--ember);}
+  .ledger{background:var(--page); border:1px solid var(--hairline); border-radius:6px; box-shadow:3px 3px 0 rgba(42,33,27,.85); padding:20px 22px;}
+  .ledger .row{display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--hairline); font-size:14px;}
+  .ledger .row:last-child{border:none;}
+  .ledger .d{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-faded);}
+  .flakes{position:absolute; top:64px; right:56px; color:var(--winter); opacity:.55; font-size:13px; letter-spacing:10px;}
+</style>
+</head>
+<body>
+  <nav class="rail">
+    <div class="wordmark">FirstHome.tools</div>
+    <a class="on" href="#"><span class="tab-no">01</span>This month</a>
+    <a href="#"><span class="tab-no">02</span>Schedule</a>
+    <a href="#"><span class="tab-no">03</span>Systems</a>
+    <a href="#"><span class="tab-no">04</span>Service log</a>
+    <a href="#"><span class="tab-no">05</span>Documents</a>
+    <a href="#"><span class="tab-no">06</span>Export</a>
+    <div class="foot">The Home on Birch Lane<br>Almanac est. 2026</div>
+  </nav>
+
+  <main>
+    <div class="flakes">✻ ✻ ✻</div>
+    <div class="top">
+      <span class="season">Winter · January · Deep frost</span>
+      <span class="addr">Signed in · 14 Birch Lane</span>
+    </div>
+
+    <h1>Quiet month, warm home.</h1>
+    <p class="dek">Two jobs this month, both indoors. The gutters can wait for the thaw — <b>the furnace filter can't.</b></p>
+
+    <div class="views">
+      <a class="on" href="#">By month</a>
+      <a href="#">By area</a>
+    </div>
+
+    <div class="cols">
+      <section>
+        <div class="sec-cap"><h2>Due at home</h2><span class="mono">January · 2 of 19</span></div>
+        <div class="task">
+          <span class="box"></span>
+          <span class="t-name">Replace the HVAC filter
+            <small>Running the furnace all winter clogs it faster. <span class="cite">manufacturer guidance</span></small>
+          </span>
+          <span class="due hot">due this week</span>
+          <a class="open" href="#">open</a>
+        </div>
+        <div class="task">
+          <span class="box"></span>
+          <span class="t-name">Test smoke &amp; CO alarms
+            <small>Heating season is CO season. <span class="cite">NFPA 72 · reviewed 2026-06</span></small>
+          </span>
+          <span class="due">by Jan 31</span>
+          <a class="open" href="#">open</a>
+        </div>
+        <div class="task">
+          <span class="box done"></span>
+          <span class="t-name" style="color:var(--ink-faded)">Check water heater pressure valve
+            <small>Logged January 4th, by you.</small>
+          </span>
+          <span class="due" style="color:var(--pine)">done</span>
+          <a class="open" href="#">open</a>
+        </div>
+
+        <div class="month-strip">
+          <span>NOV</span><span>DEC</span><span class="on">JAN</span><span class="dot">FEB</span><span class="dot">MAR</span><span>APR</span><span class="dot">MAY</span>
+        </div>
+      </section>
+
+      <aside>
+        <div class="ledger">
+          <div class="sec-cap" style="border-color:var(--ink)"><h2>Service log</h2><span class="mono">recent</span></div>
+          <div class="row"><span>Pressure valve checked</span><span class="d">JAN 04</span></div>
+          <div class="row"><span>Furnace serviced · Pro</span><span class="d">NOV 20</span></div>
+          <div class="row"><span>Gutters cleared</span><span class="d">NOV 02</span></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

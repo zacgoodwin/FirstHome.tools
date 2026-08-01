@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hearth Almanac — A2: Landing + first question</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6EEDF; --page:#FDF8ED; --ink:#2A211B; --ink-faded:#77685A;
+    --ember:#BC4B23; --cocoa:#6B4A32; --pine:#3D5C46; --hairline:#E2D5BE;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--paper); color:var(--ink); font-family:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",sans-serif; font-size:16px; line-height:1.55; width:1440px; min-height:900px; position:relative;}
+  .shell{max-width:1160px; margin:0 auto; padding:0 48px;}
+  header{display:flex; justify-content:space-between; align-items:baseline; padding:20px 0 14px; border-bottom:1px solid var(--hairline);}
+  .wordmark{font-family:Fraunces,serif; font-variation-settings:"opsz" 40,"SOFT" 80,"WONK" 1; font-weight:640; font-size:21px;}
+  .crumb{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--cocoa);}
+  .crumb .leaf{color:var(--ember);}
+  .masthead{display:grid; grid-template-columns:7fr 5fr; gap:60px; padding:60px 0 40px; align-items:start;}
+  h1{font-family:Fraunces,serif; font-variation-settings:"opsz" 144,"SOFT" 75,"WONK" 1; font-weight:560; font-size:58px; line-height:1.04; letter-spacing:-.01em; margin-bottom:20px;}
+  h1 .known{color:var(--ember);}
+  .dek{font-size:18px; color:var(--ink-faded); max-width:38ch; margin-bottom:24px;}
+  .promise{font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faded); display:flex; gap:22px; margin-bottom:34px;}
+  .promise span::before{content:"✓ "; color:var(--pine); }
+  /* linocut cottage */
+  .cottage{margin-top:26px;}
+  /* Q1 sheet */
+  .sheet{background:var(--page); border:1px solid var(--hairline); border-radius:6px; box-shadow:4px 4px 0 rgba(42,33,27,.9); padding:26px 28px;}
+  .q-cap{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faded); display:flex; justify-content:space-between; margin-bottom:12px;}
+  .q{font-family:Fraunces,serif; font-variation-settings:"opsz" 40,"SOFT" 90; font-weight:620; font-size:22px; margin-bottom:16px;}
+  .opt{display:flex; align-items:center; gap:12px; border:1.5px solid var(--cocoa); border-radius:2px; padding:13px 14px; margin-bottom:10px; background:var(--page); font-size:16px; font-weight:500; min-height:48px;}
+  .opt .ring{width:18px; height:18px; border:2px solid var(--cocoa); border-radius:50%;}
+  .opt small{color:var(--ink-faded); font-weight:400; margin-left:auto; font-size:13.5px;}
+  .opt:hover{border-color:var(--ink);}
+  .sheet .note{font-size:13px; color:var(--ink-faded); margin-top:14px;}
+  .pageno{position:absolute; right:56px; bottom:34px; font-family:Fraunces,serif; font-variation-settings:"opsz" 144,"SOFT" 60; font-size:44px; color:var(--hairline); font-weight:600;}
+  .colophon{margin-top:34px; padding:18px 0 60px; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; color:var(--ink-faded); border-top:1px solid var(--hairline); display:flex; gap:28px;}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="wordmark">FirstHome.tools</div>
+    <div class="crumb"><span class="leaf">&#10047;</span> Autumn · No signup · Free</div>
+  </header>
+
+  <div class="masthead">
+    <div>
+      <h1>Your home has an almanac.<br><span class="known">Most of it you've never read.</span></h1>
+      <p class="dek">Answer six questions. We'll uncover the maintenance your home actually needs — sourced, scheduled, and delivered to the calendar you already check.</p>
+      <div class="promise"><span>3 minutes</span><span>No account</span><span>Every task cites its source</span></div>
+      <!-- linocut cottage -->
+      <svg class="cottage" width="230" height="130" viewBox="0 0 200 120" fill="none" stroke="#6B4A32" stroke-width="2.5" stroke-linecap="round">
+        <path d="M40 70 L100 30 L160 70"/>
+        <path d="M52 62 L52 100 L148 100 L148 62"/>
+        <path d="M120 42 L120 24 L132 24 L132 50"/>
+        <path d="M126 20 C122 12 132 10 128 4" stroke-width="2"/>
+        <path d="M88 100 L88 76 L112 76 L112 100"/>
+        <path d="M62 78 L76 78 L76 90 L62 90 Z"/>
+        <path d="M124 78 L138 78 L138 90 L124 90 Z"/>
+        <path d="M20 100 L180 100" stroke-width="3"/>
+        <path d="M28 108 C60 104 140 104 172 108" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <div>
+      <div class="sheet">
+        <div class="q-cap"><span>Begin the almanac</span><span>1 of 6</span></div>
+        <div class="q">What kind of home is it?</div>
+        <div class="opt"><span class="ring"></span> House, detached</div>
+        <div class="opt"><span class="ring"></span> Townhome <small>shared walls, own roof</small></div>
+        <div class="opt"><span class="ring"></span> Condo or apartment <small>the building handles the outside</small></div>
+        <div class="note">Answering starts your almanac — nothing to sign up for.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="colophon">
+    <span>THE ALMANAC OF YOUR HOME</span>
+    <span>SOURCED FROM NFPA · CPSC · MANUFACTURER GUIDANCE</span>
+    <span>MMXXVI</span>
+  </div>
+  <div class="pageno">01</div>
+</div>
+</body>
+</html>

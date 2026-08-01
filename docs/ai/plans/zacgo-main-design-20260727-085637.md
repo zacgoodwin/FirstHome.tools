@@ -178,11 +178,222 @@ Its gate is technical (loop survives Apple + Google), not evidential.
 A now; C committed as phase 2 once the loop survives real calendar clients.
 Premise 4 makes A the recruiting instrument; the named-user gap (none)
 makes C's shareable artifact the distribution plan for cold outreach.
-Approved wireframe (structure only, aesthetics deferred per DESIGN.md):
-three screens: wizard with live plan build, finish-to-subscribe, and
-calendar-event-to-mark-done. Committed in-repo at
-docs/ai/plans/assets/zacgo-main-design-20260727-085637-wireframe.html
-(+ .png render).
+Approved wireframe (structure only; aesthetics now defined in DESIGN.md):
+originally three screens (wizard with live plan build, finish-to-subscribe,
+calendar-event-to-mark-done), superseded by wireframe v2 (10 surfaces),
+committed in-repo at docs/ai/plans/assets/wireframe-v2.html (+ .png render).
+
+## Design Specification
+
+Added by /plan-design-review on 2026-07-31. Structure, hierarchy, states, and
+copy only. Aesthetics were deferred to /design-consultation (D14), which has
+since run and filled DESIGN.md. Reference wireframe (structural, no aesthetic
+decisions): `docs/ai/plans/assets/wireframe-v2.html`
+
+### Screen inventory
+
+Nine surfaces. v1 named three; the other six were undrawn and would have been
+improvised at build time.
+
+| # | Surface | Purpose |
+|---|---------|---------|
+| 1 | Landing + question 1 (merged) | Front door from the outreach link; states the gap and starts the wizard in one view |
+| 2 | Wizard question | One question, live plan count, dwelling gate first |
+| 3 | "Not sure" assist | Plain-language identification, non-blocking skip |
+| 4 | Surprise moment | First surprise only, in place, before the next question |
+| 5 | Result and subscribe | One primary action, trust line, recovery block |
+| 6 | Result, low-surprise variant | Reframes to what the building handles |
+| 7 | Task page from calendar event | Why, source, mark done, snooze, not-applicable |
+| 8 | Mark-done success / already-done | Confirms write, next due date, undo/unmark |
+| 9 | Lost link recovery | Resend by email, or start over with the cost stated |
+
+The subscribe fallback (copyable feed URL plus per-client instructions) lives
+under the primary button on surface 5, always present, not shown on error. A
+webcal handoff cannot report failure, so the fallback cannot be conditional.
+
+### Information architecture (D1 to D4)
+
+- **D1. No separate landing page.** The headline, one-line promise, no-signup
+  note, and question 1 share one screen. Removes a tap and a decision between
+  the outreach click and the first answer. Constraint: the promise is about 15
+  words or question 1 falls below the fold on a 320px phone.
+- **D2. One primary action on the result page.** "Add to my calendar" is the
+  only full-weight button. Feed URL, .ics snapshot, and JSON export move into a
+  disclosure. Export still ships day one (premise 5); it stops competing with
+  the event the validation bar counts.
+- **D3. Persistent header on every screen**, including the wizard: wordmark,
+  route to the full plan, position indicator. Fixes the trunk-test failure on
+  surface 7, which after day one is the product's real front door.
+- **D4. Live plan is a pinned collapsed count bar on mobile**, expanding as an
+  overlay. The question never moves as the plan grows. On desktop the plan is
+  always visible (see Responsive).
+
+### Interaction states
+
+Every cell is a commitment. An unwritten state is a state invented under
+deadline pressure.
+
+| Surface | Loading | Empty / zero | Error | Success | Partial |
+|---|---|---|---|---|---|
+| Landing + Q1 | static, no fetch | n/a | n/a | n/a | n/a |
+| Wizard question | options disabled, count animates, skeleton rows past 400ms | n/a | answer failed to save: inline retry under the question, answer preserved | next question slides in | skip yields a "we could not tell" resolvable task |
+| Live plan panel | skeleton rows | "answer a couple more and your plan starts filling in" | keeps last good state, shows "could not refresh" | count animates old to new | partial rules noted as "based on what you have told us" |
+| Result page | skeleton headline and list | surface 6 reframe | plan not found: surface 9 | surface 5 | skipped questions listed as "resolve later" tasks |
+| Subscribe | button disabled state | n/a | fallback always present, never conditional | no client callback exists: show "added? here is how to check" | n/a |
+| Mark done | button disabled state | n/a | write failed: keep the form, inline retry, never lose the note | surface 8 plus next due date | already logged: show who and when, offer unmark |
+| Export / snapshot | button disabled state | n/a | download failed: retry link | browser download plus inline confirmation | n/a |
+
+Three states carry specific decisions:
+
+- **D5. Low-surprise result.** When the surprise count is 2 or fewer (D15), the
+  headline switches from "N you probably did not know about" to what the
+  building or landlord handles instead. Never renders "0 you probably did not
+  know about". Condos and townhouses are a large slice of first-time buyers,
+  not an edge case.
+- **D6. Double mark-done.** The completion token is deliberately shared, so two
+  people on the same household calendar can tap the same event. The second
+  arrival sees an already-done state: who logged it (rough label, the product is
+  anonymous), when, the next due date, and an explicit unmark for an accidental
+  tap. Service history keeps one row per real completion.
+- **D7. "Not sure" is never a dead end.** The assist screen identifies systems
+  by plain description ("metal box with a big duct on top") so nobody has to
+  leave the flow. Skipping still completes the wizard and produces a resolvable
+  task. This is the honest answer for the target user and the highest drop-off
+  risk in the flow.
+
+### User journey storyboard
+
+| # | User does | Should feel | What supports it |
+|---|---|---|---|
+| 1 | Reads the outreach post | Skeptical, "another app" | Post links to a thing you do, not a signup |
+| 2 | Clicks through, 3-second scan | Wary, curious | Headline states the gap in plain numbers; question 1 already visible; "no signup, free, 3 minutes" |
+| 3 | Answers questions 1 to 2 | Mildly invested | Count appears and moves after each answer |
+| 4 | Hits the first surprise, under 90s | Alarm, then gratitude | Surprise gets its own beat, plain risk language, cited source |
+| 5 | Finishes the wizard | Ownership: "this is my list" | Count anchor, why and source on every task |
+| 6 | Subscribes | Small leap of faith | One primary action, trust line, no account asked for |
+| 7 | Sees events in their own calendar | Relief, it is real | All-day floating events, plain titles, no app to open |
+| 8 | Six weeks later, a notification fires | Forgotten context, mild dread | Task page carries identity, why, source, and a route to the full plan |
+| 9 | Marks it done | Competence | Success confirms the write, names the next due date, warns the calendar catches up within a day |
+| 10 | Year two | Trust, or quiet churn | Completed occurrences stay in the calendar as record; export promise still stated |
+
+Two decisions come out of the arc:
+
+- **D8. First surprise gets its own beat.** Later surprises fold into the plan
+  list. One interruption, not seven. On mobile the plan panel is collapsed, so
+  inline-only surprises risk never being seen during the wizard at all.
+- **D9. Name the calendar lag.** Subscribed feeds are polled by the client, not
+  pushed. A completion will not appear in the user's calendar for up to a day.
+  The completed occurrence stays in the feed and is marked done on the next
+  refresh, and the success screen says so in one sentence. Unstated, every
+  user's first completion looks like it failed, on the exact action the 30-day
+  bar counts.
+- **D10. State the trust promise where trust is decided.** One line on the
+  result page about export and outliving the app (premise 5), separate from the
+  export action itself, which stays in the disclosure. The promise is for the
+  person deciding to subscribe; the button is for a power user.
+
+### Copy rules
+
+- **D11.** No protocol or file-format jargon in user-facing strings. "Add to my
+  calendar", not "Add to my calendar (webcal)". "Copy your calendar link", not
+  "Copy feed URL (read-only)". "Download a one-time copy", not "Download .ics
+  snapshot". "I am not sure", not "Not sure, help me tell".
+- Note fields ship empty. The v1 wireframe drew a prefilled sample note, which
+  would read as an already-saved entry.
+- Utility language on the wizard, plan, and task pages. Product language on the
+  landing and result screens. No mood copy anywhere.
+- If deleting 30% of a string improves it, keep deleting.
+
+### Anti-slop constraints (binding, inputs to /design-consultation)
+
+The wireframes use `system-ui` and dashed boxes because that is wireframe
+shorthand. Neither is a design instruction. Binding for implementation:
+
+- **D12.** Named bans: `system-ui` or `-apple-system` as the production display
+  or body face; purple/indigo gradients; the three-column icon-in-circle feature
+  grid; decorative blobs and wavy dividers; emoji as design elements; uniform
+  large border-radius on everything; centred text as a global default.
+- **D13. Cards only where the card is the interaction.** A tappable task row can
+  be a card. A "why this applies" explanation, the trust line, and the count
+  summary are not cards. Nineteen tasks must not render as nineteen bordered
+  boxes; use typographic hierarchy and dividers.
+- Colour system defined as CSS variables. Two typefaces maximum. Body text 16px
+  or larger, contrast 4.5:1 or better.
+- One job per section. Landing surfaces read as one composition, not a
+  dashboard.
+
+### Design system sequencing
+
+- **D14. Run /design-consultation after this review and before the scaffold
+  ticket.** "At the first UI ticket" is ambiguous: in SvelteKit the first UI
+  ticket is the scaffold, where `+layout.svelte`, the global stylesheet, and the
+  base font stack are created and then inherited by everything after. This
+  review produced the brief the consultation needs: nine surfaces, a state
+  table, hierarchy decisions, and the constraints above.
+
+### Responsive
+
+- **D16. Two intentional layouts, not one layout that reflows.**
+  - Mobile (up to 767px): single column. Plan is a pinned collapsed count bar
+    that expands as an overlay. Question never moves.
+  - Desktop (768px and up): two columns on the wizard. Question left, live plan
+    always visible right. The collapsed bar does not exist here. Tasks appearing
+    beside the question is the best available version of the core interaction
+    and mobile physically cannot fit it.
+  - Result, task, and recovery surfaces: single column, capped at a readable
+    measure, centred at all widths.
+- Launch traffic is a Reddit post, so a meaningful share of first-day visitors
+  are on a laptop.
+
+### Accessibility acceptance criteria
+
+- **D17.** Wizard options are native `input[type=radio]` inside a `fieldset`
+  with a `legend`, not styled `div`s. Keyboard selection, screen reader
+  semantics, and form submission come free.
+- Touch targets 44px minimum. Selected state signalled by more than fill and
+  border weight (include a mark or a checked control).
+- Visible focus style on every interactive element, never `outline: none`.
+- Body text contrast 4.5:1 or better.
+- **The live task count is wrapped in an ARIA live region.** The count changing
+  silently is the entire discovery mechanic; without an announcement it does not
+  exist for a screen reader user.
+- The surprise beat moves focus to itself and returns focus to the next question
+  on dismiss. Otherwise keyboard users tab straight past it.
+- The count animation respects `prefers-reduced-motion`; the number updates
+  without tweening.
+
+### NOT in scope (design decisions deliberately deferred)
+
+- Typography, colour, spacing scale, motion curves, iconography, illustration:
+  owned by /design-consultation (D14).
+- Phase 2 report-card front door and share artifact: its own design pass after
+  the loop survives Apple and Google.
+- Climate and region interval adjustments: national defaults with per-task
+  override in v1, per the existing plan.
+- Print and large-text layouts: no evidence anyone needs them before validation.
+- Dark mode: no evidence, and it doubles the surface area of every colour
+  decision /design-consultation has not made yet.
+- Onboarding tour, tooltips, help centre: if the loop needs explaining, the
+  design is wrong.
+
+### What already exists
+
+- `DESIGN.md`: was intentionally empty at review time; filled 2026-07-31 by
+  /design-consultation (the Hearth Almanac system). D14 closed.
+- v1 wireframe: superseded and removed from the repo; wireframe v2
+  (`docs/ai/plans/assets/wireframe-v2.html`) is the structural reference.
+- SvelteKit is not scaffolded. There is no component vocabulary, no CSS, and no
+  prior UI to align with. Everything above is the first design decision of the
+  project rather than an extension of an existing one.
+
+### Approved mockups
+
+| Screen/Section | Mockup path | Direction | Notes |
+|---|---|---|---|
+| All 9 surfaces plus the desktop wizard | `docs/ai/plans/assets/wireframe-v2.png` | Structural only: hierarchy, states, flow | No aesthetic commitment. Dashed boxes are grouping shorthand, not cards (D13). System font is wireframe convention, not the production face (D12). Reflects all 18 decisions including the merged landing (D1) and the desktop two-column wizard (D16). |
+| Landing + Q1, aesthetic (A2) | `docs/ai/plans/assets/design-system-20260731/variant-A2.png` | Hearth Almanac applied | Board-approved round 2; HTML alongside is the token-accurate reference |
+| Result page, aesthetic (A3) | `docs/ai/plans/assets/design-system-20260731/variant-A3.png` | Hearth Almanac applied | "Perfect end of wizard" (board round 2); by-area accordion, account block |
+| Platform "This month" (C2) | `docs/ai/plans/assets/design-system-20260731/variant-C2.png` | Hearth Almanac applied | Binder rail, month/area toggle, service log, Mail Slot (future) |
 
 ## Open Questions
 
