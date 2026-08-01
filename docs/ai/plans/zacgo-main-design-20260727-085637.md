@@ -394,6 +394,7 @@ shorthand. Neither is a design instruction. Binding for implementation:
 | Landing + Q1, aesthetic (A2) | `docs/ai/plans/assets/design-system-20260731/variant-A2.png` | Hearth Almanac applied | Board-approved round 2; HTML alongside is the token-accurate reference |
 | Result page, aesthetic (A3) | `docs/ai/plans/assets/design-system-20260731/variant-A3.png` | Hearth Almanac applied | "Perfect end of wizard" (board round 2); by-area accordion, account block |
 | Platform "This month" (C2) | `docs/ai/plans/assets/design-system-20260731/variant-C2.png` | Hearth Almanac applied | Binder rail, month/area toggle, service log, Mail Slot (future) |
+| Task page from calendar event (T2) | `docs/ai/plans/assets/design-system-20260731/variant-T2.png` | Hearth Almanac applied | Board round 2 request: separate linkable task page — why + source, mark done, note, snooze, per-asset service log, calendar-lag line |
 
 ## Open Questions
 
