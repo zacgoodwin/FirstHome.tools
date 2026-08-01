@@ -38,5 +38,6 @@ tools/gate.mjs fails if a knowledge file exists that isn't listed here
 - docs/ai/TICKET-TEMPLATE.md — the six lint-enforced ticket sections + example.
 - docs/ai/HEALTH-METRICS.md — metrics with sources, thresholds, actions.
 - docs/ai/LEARNINGS.md — curated /learn export.
+- docs/ai/ROADMAP.md — proposed feature roadmap, gated phases spike → platform. Read before scoping any post-spike feature.
 - docs/ai/plans/ — accumulated plan files, reviews append.
 - .claude/credentials.md — test logins for /qa and /browse (gitignored; copy .claude/credentials.example.md). Test/dev accounts only.
