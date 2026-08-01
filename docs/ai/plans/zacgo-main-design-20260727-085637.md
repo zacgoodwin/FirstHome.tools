@@ -192,8 +192,8 @@ decisions): `docs/ai/plans/assets/wireframe-v2.html`
 
 ### Screen inventory
 
-Nine surfaces. v1 named three; the other six were undrawn and would have been
-improvised at build time.
+Ten surfaces (C9 count). v1 named three; the rest were undrawn and would
+have been improvised at build time.
 
 | # | Surface | Purpose |
 |---|---------|---------|
@@ -201,11 +201,12 @@ improvised at build time.
 | 2 | Wizard question | One question, live plan count, dwelling gate first |
 | 3 | "Not sure" assist | Plain-language identification, non-blocking skip |
 | 4 | Surprise moment | First surprise only, in place, before the next question |
-| 5 | Result and subscribe | One primary action, trust line, recovery block |
-| 6 | Result, low-surprise variant | Reframes to what the building handles |
-| 7 | Task page from calendar event | Why, source, mark done, snooze, not-applicable |
-| 8 | Mark-done success / already-done | Confirms write, next due date, undo/unmark |
-| 9 | Lost link recovery | Resend by email, or start over with the cost stated |
+| 5 | "Already doing?" checklist | Standard skippable wizard-end step; measures the discovery claim (C4) |
+| 6 | Result and subscribe | One primary action, trust line, recovery block |
+| 7 | Result, low-surprise variant | Reframes to what the building handles |
+| 8 | Task page from calendar event | Why, source, mark done, snooze, not-applicable (action-token scope, C5) |
+| 9 | Mark-done success / already-done | Confirms write, next due date, undo/unmark |
+| 10 | Lost link recovery | Honest mailto recovery (C9), or start over with the cost stated |
 
 The subscribe fallback (copyable feed URL plus per-client instructions) lives
 under the primary button on surface 5, always present, not shown on error. A
@@ -396,27 +397,215 @@ shorthand. Neither is a design instruction. Binding for implementation:
 | Platform "This month" (C2) | `docs/ai/plans/assets/design-system-20260731/variant-C2.png` | Hearth Almanac applied | Binder rail, month/area toggle, service log, Mail Slot (future) |
 | Task page from calendar event (T2) | `docs/ai/plans/assets/design-system-20260731/variant-T2.png` | Hearth Almanac applied | Board round 2 request: separate linkable task page — why + source, mark done, note, snooze, per-asset service log, calendar-lag line |
 
+## Engineering Specification
+
+Added by /plan-eng-review on 2026-07-31. Twelve findings (E1-E12), all
+resolved; each was individually approved. This section settles the plan's
+former eng open questions.
+
+### Service layout (E1)
+
+- `services/web` — the SvelteKit app (all routes, UI, feed endpoint).
+- `services/rules` — the versioned rules dataset: JSON data + zod contract +
+  its own gate tests. The app imports it via the typed contract only.
+- Rationale: the rules dataset is the liability surface, edits on a
+  different cadence, and phase 5 wants it beyond the app. Two concerns, two
+  directories; no third service (the feed is one route handler).
+
+### Data access (E2)
+
+- All DB access through SvelteKit server routes using the service-role key
+  (server env only). The browser never holds any Supabase key.
+- RLS enabled on every table with zero policies (deny-all): a leaked anon
+  key reads nothing. No client-direct Supabase access in v1.
+
+### Tokens (E3)
+
+- Three independent capability tokens per home (edit / feed / action),
+  each ≥128-bit crypto-random (base64url).
+- Stored as SHA-256 digests only; lookup by unique digest index; no
+  plaintext at rest. Columns support rotation later (no rotation UI in v1).
+- Token-bearing routes are rate-limited per IP.
+
+### Feed semantics (E4)
+
+- Discrete regenerated events, NOT RRULE. Horizon: next 18 months per task.
+- UID = `{taskId}-{dueDate}@firsthome.tools` — stable by construction.
+- All-day DATE values (no TZID). Completed occurrences retained with a ✓
+  title prefix (D9). `METHOD:PUBLISH`, `X-WR-CALNAME: The Almanac of
+  {home name}`.
+- Generated via an existing library (`ics` or `ts-ics`) — never hand-rolled
+  RFC 5545.
+
+### v1 result page scope (E5)
+
+- The "Keep this almanac" block renders D18 email capture only ("save my
+  email for recovery"). The "Create a free account" button is phase 2; no
+  auth code in the spike.
+
+### Data model (E6)
+
+Rules live in services/rules (versioned JSON), never in the DB.
+
+```
+homes
+  id uuid pk · dwelling_type · answers jsonb · tester_ref text null
+  edit_token_digest · feed_token_digest · action_token_digest
+    (each unique, indexed)
+  recovery_email text null (D18/E10) · created_at
+
+tasks
+  id uuid pk · home_id fk · rule_id text · rule_version text
+  status: active | not_applicable · interval_months int
+  next_due date · snoozed_until date null · custom_name text null
+  unique (home_id, rule_id)
+
+completions
+  id uuid pk · task_id fk · due_date date · done_at timestamptz
+  done_by: me | pro · note text · undone_at timestamptz null
+  unique (task_id, due_date) where undone_at is null
+    -- D6: one row per real completion; double-tap hits the constraint
+
+analytics_events
+  id bigint pk · home_id fk null · event text · ts timestamptz · meta jsonb
+  -- wizard_started, wizard_completed, first_surprise, subscribed,
+  -- task_completed; server-written only; no PII in meta
+```
+
+`due_date` on completions ties each completion to a feed occurrence (the ✓
+rendering). `rule_version` pins which dataset produced the task — the
+liability trail.
+
+### Rules contract (E7)
+
+- Zod schema: id, title, area (Safety/Systems/Exterior/Interior),
+  applicability conditions over the answer vocabulary, interval_months,
+  why, source_url, source_name, reviewed_date, commonly_missed, version.
+- Gate tests: every rule parses; source_url is https; reviewed_date ≤
+  today; every applicability condition references only fields the wizard
+  can produce; every wizard question feeds ≥1 rule (the wizard↔rules
+  cross-check — the two must never diverge).
+
+### Schedule module (E8)
+
+One pure module (`services/web/src/lib/schedule.ts`) owns all date math:
+occurrence expansion, next_due advancement, snooze, due-classification.
+Table-driven gate tests. Locked semantics:
+
+1. Month-length clamp: Jan 31 + 1 month = Feb 28.
+2. "Due" comparisons are date-only against the user's local date (sent by
+   the client), never server-UTC "today".
+3. Completing re-anchors the next occurrence from done_at's date, not the
+   original due date. (Future calendar events shift after completion —
+   intended.)
+
+### Server error semantics (E9)
+
+1. Unknown/invalid token on any capability route → lost-link screen with
+   HTTP 404; identical response shape and timing for malformed vs absent
+   tokens (no oracle).
+2. Double mark-done → constraint violation is caught and returned as 200
+   with the existing completion row; UI renders the already-done state.
+   Never a 500.
+3. Analytics inserts are fire-and-forget: a failed write logs and never
+   fails the user's request.
+
+### Email recovery (E10)
+
+Capture-only in v1: store recovery_email, copy reads "save my email for
+recovery" (no instant send). Manual founder recovery at spike scale.
+Transactional sender (Resend or similar) arrives with phase 2 accounts.
+Constraint wording amended: "no reminder push/email; transactional
+recovery email deferred to phase 2."
+
+### Test matrix (E11)
+
+- **Gate lane** (Vitest, pre-commit alongside tools/gate.mjs, <2s):
+  rules contract + cross-check, schedule table tests, plan builder
+  (answers → applicable rules), ICS golden-file.
+- **Golden-file ICS test**: fixture home, feed output byte-compared to a
+  checked-in .ics; UID/DTSTART/property churn becomes a failing diff.
+- **E2E lane** (Playwright, CI + pre-deploy, not pre-commit): full loop
+  (landing → wizard → result → feed fetch), condo ≤2-surprise reframe,
+  double-tap mark-done idempotency, invalid-token → recovery.
+- **Manual client matrix** (final build day, already planned):
+  Apple / Google / Outlook subscribe, poll, event-open, mark-done.
+- Evals: none — v1 has no latent behavior.
+- 24 test requirements enumerated in the eng-review test plan artifact
+  (`~/.gstack/projects/zacgoodwin-FirstHome.tools/`); implementation writes
+  each test alongside its feature, never as a follow-up.
+
+### Feed route caching (E12)
+
+ETag from the feed body hash; `If-None-Match` → 304 with no body;
+`Cache-Control: max-age=3600`. (Subscribed-event definition superseded by
+C3 below.)
+
+### Codex-round amendments (C1-C9)
+
+An independent Codex review of this specification found five genuine holes
+and four tightenings; all were resolved by explicit decision:
+
+- **C1 — Token derivation chain (amends E3).** Digest-only storage cannot
+  render feed URLs or embed action links. Fix: one-way derivation —
+  `feed = HKDF(editToken, "feed")`, `action = HKDF(feedToken, "action")`.
+  Digests stored for lookup only. A request carrying a token can derive
+  everything below it, nothing above it. DB leak still exposes nothing.
+- **C2 — Due-date anchoring (amends E7/E8).** Each rule declares its
+  anchor: `monthly` (setup+1mo), `seasonal:{months}`, or `interval`
+  (setup + interval/2 — the honest guess when service history is unknown).
+  No front-loading. The 30-day validation metric counts only completions
+  of tasks genuinely due in the window; monthly safety tasks make the bar
+  legitimately reachable for every home.
+- **C3 — 'Subscribed' redefined (amends E12 and Success Criteria).**
+  One GET is not a subscription. Every feed fetch is logged raw (with
+  user-agent); `subscribed` = a home whose feed was fetched ≥2 times ≥6
+  hours apart (i.e. real client polling). `homes.subscribed_at` set once —
+  that is the dedup. Browser pastes no longer count (they don't re-poll).
+- **C4 — Discovery is measured in v1 (amends D5 resolution).** The
+  "which of these were you already doing?" checklist becomes a standard,
+  skippable wizard-end step for everyone. Unchecked = genuinely unknown;
+  feeds the personalized headline and premise-1 evidence. Optional-and-
+  buried is no longer acceptable — the central claim gets measured.
+- **C5 — Action token scope broadened explicitly (amends E3 wording and
+  the Approach A description).** Action token = task operations on this
+  home (mark done, unmark, snooze, not-applicable) + read-only plan view.
+  Never answers/home edits, never email, never token display — those
+  remain edit-token only. Household members seeing the calendar can
+  operate tasks; all ops logged and reversible.
+- **C6 — Occurrence identity (amends E4/E6).** UID = `{taskId}-{seq}`
+  (deterministic occurrence index from the anchor), NOT the due date —
+  snooze/re-anchor move events in place instead of creating ghosts.
+  Completions keyed `unique (task_id, seq) where undone_at is null`.
+- **C7 — Rules governance (amends E7).** services/rules retains every
+  published dataset version importable; tasks render from their pinned
+  `rule_version` forever (liability trail); no auto-migration in v1.
+  Editorial rule: every rule addition/change requires human review that
+  the cited source supports the exact claim and interval — the gate
+  enforces form, the founder enforces truth.
+- **C8 — Scope tension resolved: keep the approved scope.** Codex
+  proposed cutting to four surfaces; rejected — the "extras" are the
+  states whose absence looks broken, and completeness at CC prices was
+  the plan's premise. Decision on record; not to be re-argued.
+- **C9 — Hygiene.** Lost-link screen drops the fake "Send me my link"
+  form: honest copy (mailto recovery + start-new-plan) until phase 2's
+  sender exists. Surface inventory normalized to ten (success and
+  already-done counted separately). HEALTH-METRICS amended: active home =
+  anonymous home with ≥1 completion or ≥1 feed poll in the window.
+
 ## Open Questions
 
 - Authoritative sources per rule (NFPA, CPSC, manufacturer guidance);
-  blocks the rules dataset; owner @Zac.
-- Token security posture for all three tokens (opaque, unguessable,
-  revocable), the completion-scoped action token especially, since it is
-  exposed to everyone the feed reaches; eng decision at build time.
-- Feed semantics: RRULE recurrence vs regenerated discrete events; how
-  stale-event risk is handled given calendar clients poll subscribed feeds
-  as rarely as every 24h+. Leaning discrete regenerated events with the
-  mark-done task list as the source of truth for "due now".
-- Dwelling-type branching: condo/townhouse owners must never see gutters
-  or sump pump questions; the wizard needs a dwelling gate up front, plus
-  the "this doesn't apply to my home" escape on every task.
-- Sign-up boundary within premise 7: v1 is anonymous, but where does
-  optional email capture (feed-URL recovery) sit without becoming an
-  account wall? Decide at build time; must not gate the loop.
+  blocks the rules dataset; owner @Zac. THE remaining critical-path item.
 - Official active-user metric: ensure the health metric counts anonymous
   homes (amend alongside the scaffold ticket if it assumes signups).
 - Climate/region interval adjustments: v1 ships national defaults with
-  per-task override; regionalization deferred.
+  per-task override; regionalization deferred (roadmap phase 5).
+- Resolved by design review: dwelling gate (D7 + landing D1), signup
+  boundary (D18). Resolved by eng review: token posture (E3), feed
+  semantics (E4), email-capture infra (E10). Market note: Oply is dead
+  (domain for sale, 2026-07-31) — the Status Quo section's incumbent list
+  overstates it.
 
 ## Success Criteria
 
@@ -487,3 +676,27 @@ critical path without violating premise 4.
   in both directions, is the trait this diagnostic is designed to find.
 - You archived and re-derived instead of patching. Three premises changed
   and four build details upgraded; the re-run paid for itself.
+
+## GSTACK REVIEW REPORT
+
+| Review | Trigger | Why | Runs | Status | Findings |
+|--------|---------|-----|------|--------|----------|
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | — |
+| Codex Review | `/codex review` | Independent 2nd opinion | 1 | ABSORBED | 11 findings → 9 C-decisions (2 were truncation artifacts) |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR (PLAN) | 21 issues (12 review + 9 Codex round), 0 unresolved, 0 critical gaps |
+| Design Review | `/plan-design-review` | UI/UX gaps | 1 | CLEAR (FULL) | score: 4/10 → 9/10, 18 decisions |
+| DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
+
+**CODEX:** outside voice found 5 genuine holes the review missed (token-URL
+generation, due-date anchoring, subscribed definition, action-token scope,
+snooze/UID churn) — all fixed as C1-C9; its scope-cut proposal was rejected
+by explicit decision (C8).
+
+**CROSS-MODEL:** Claude review (12 findings) and Codex (11) overlapped on
+zero items — genuinely complementary passes; every accepted finding from
+both is folded into the Engineering Specification.
+
+**VERDICT:** ENG + DESIGN CLEARED — ready to implement. Scaffold ticket
+(T1) unblocked; rules dataset sourcing (owner @Zac) is the critical path.
+
+NO UNRESOLVED DECISIONS

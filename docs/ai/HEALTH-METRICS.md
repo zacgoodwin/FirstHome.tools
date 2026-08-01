@@ -17,4 +17,5 @@ action. A metric without a decision attached is decoration.
 
 | Metric | Source | Threshold | Action on breach |
 |---|---|---|---|
-| Active users (signup + >=1 active maintenance schedule) | app DB query (TODO: script once schema exists) | 100 by day 90 | review acquisition; no kill criteria (personal tool) |
+| Active homes (anonymous home with >=1 completion or >=1 feed poll in window; v1 has no signups — amended per eng review C9, 2026-07-31) | app DB query (TODO: script once schema exists) | 100 by day 90 | review acquisition; no kill criteria (personal tool) |
+| Subscribed homes (feed fetched >=2 times >=6h apart; homes.subscribed_at — eng review C3) | app DB query | premise-2 bar: 10 unrelated testers | see plan Success Criteria |
