@@ -49,6 +49,7 @@
       "PowerShell(git clean:*)"
     ],
     "deny": [
+      "Read(./docs/ai/plans/archive/**)",
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./secrets/**)",

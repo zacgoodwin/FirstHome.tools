@@ -2,6 +2,7 @@
 .gstack/
 graphify-out/
 .worktrees/
+pdfs/
 
 # Per-developer Claude Code overrides (grow your own allowlist here)
 .claude/settings.local.json
