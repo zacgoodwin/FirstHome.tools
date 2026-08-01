@@ -7,10 +7,10 @@ ICS calendar feed; their calendar app does the reminding.
 ## Stack
 
 - TypeScript 5, Node 22, npm
-- SvelteKit 2 (Svelte 5) — not yet scaffolded; first build ticket does it
-- Supabase (Postgres + auth); Supabase MCP connected
+- SvelteKit 2 (Svelte 5) on `@sveltejs/adapter-node` — not yet scaffolded
+- Postgres 17 + Caddy, self-hosted via Docker Compose (Supabase dropped 2026-08-01)
 - Reminder delivery: subscribed ICS feed (RFC 5545), no push/email infra
-- Run: `npm run dev` (once scaffolded)
+- Run: `npm run dev`; full stack `docker compose up` (once scaffolded)
 
 ## Map
 

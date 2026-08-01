@@ -39,5 +39,7 @@ tools/gate.mjs fails if a knowledge file exists that isn't listed here
 - docs/ai/HEALTH-METRICS.md — metrics with sources, thresholds, actions.
 - docs/ai/LEARNINGS.md — curated /learn export.
 - docs/ai/ROADMAP.md — proposed feature roadmap, gated phases spike → platform. Read before scoping any post-spike feature.
+- docs/ai/RULES-SOURCING.md — source hierarchy, disagreement tiebreak, per-rule acceptance checklist for the maintenance rules dataset. Read before authoring or revising any rule.
+- docs/ai/TEST-PLAN.md — the enumerated test requirements for the Live Loop spike. Read before writing tests for a phase-0 feature.
 - docs/ai/plans/ — accumulated plan files, reviews append.
 - .claude/credentials.md — test logins for /qa and /browse (gitignored; copy .claude/credentials.example.md). Test/dev accounts only.

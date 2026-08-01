@@ -23,16 +23,41 @@ sharpest evidence is an artifact, not an opinion: his own ad-hoc list holds
 tasks missing from that list are exactly the product's territory. No
 external behavioral evidence exists. Validation bar (premise 2): 10
 unrelated first-time homeowners complete the wizard and subscribe; at least
-5 complete a scheduled task within 30 days unprompted.
+5 complete a scheduled task within 45 days unprompted (widened from 30 by Y3).
 
 ## Status Quo
 
 Ad-hoc list plus phone reminders, covering only the tasks the owner already
 knew about. Incumbents exist but are not the real competitor: HomeZada
-($59-99/yr, depth), Homer (absorbed Centriq's users, AI manuals), Dwellin
-(free, address-based instant schedule), Oply (done-for-you, covered
-metros). Centriq shut down Jan 2025 and permanently deleted user data.
-About 70% of apps in this category are deleted after one use.
+($59-99/yr, depth), Homer (absorbed Centriq's users, AI manuals, free tier
+with ads plus ~$5/mo premium), Dwellin (free, address-based instant
+schedule), HomeCalendr (monthly/seasonal/annual task schedule with email and
+push reminders plus per-task instructions). Centriq shut down Jan 2025 and
+permanently deleted user data. About 70% of apps in this category are deleted
+after one use.
+
+Competitive refresh (CEO review, 2026-08-01):
+
+- **HomeCalendr** was missing from this section, though the ROADMAP's
+  positioning summary carries a full audit of it (2026-08-01). That audit is
+  the authority: a marketing-grade demo rather than a shipping product — no
+  backend, completion persists nowhere, no payments behind the pricing page,
+  22 live tasks against a claimed "50+", and email and push only with no
+  calendar feed. What it does own is per-task execution content (difficulty,
+  time, tools, warning signs, steps) and public crawlable task pages. Premise
+  3 holds, and holds more comfortably than a surface read suggests: the
+  closest positioning match in the category is not actually shipping the loop.
+  The tripwire to watch is a competitor shipping a subscribed ICS feed with
+  sourced rules; that would need premise 3 re-argued, not re-confirmed.
+- **Oply** was listed here as a live incumbent and has been removed. Its
+  domain was for sale as of 2026-07-31 while its blog still served content;
+  treat it as dying, not dead, and do not cite it as a live comparison.
+- Re-confirmed: the real competitor is still "nothing plus an ad-hoc list".
+  Every product above requires adopting a new app and checking it. None of
+  them wins on minutes-to-value, and none is calendar-native.
+- Sourcing note: `docs/ai/ROADMAP.md` "Competitive positioning summary" is the
+  canonical competitive record. This section is the plan-local summary and
+  should be re-synced from it, not researched independently.
 
 ## Target User & Narrowest Wedge
 
@@ -48,8 +73,10 @@ via a subscribed ICS feed.
 
 ## Constraints
 
-- Stack fixed at bootstrap: TypeScript 5 / Node 22 / npm, SvelteKit 2
-  (Svelte 5), Supabase. Web/PWA only.
+- Stack: TypeScript 5 / Node 22 / npm, SvelteKit 2 (Svelte 5) on
+  `@sveltejs/adapter-node`, Postgres 17, Caddy, all in Docker Compose on
+  founder-operated infrastructure. Web/PWA only. (Amended by P1 — the
+  bootstrap stack named Supabase, which was dropped with the hosting pivot.)
 - Reminders via subscribed ICS feed (RFC 5545); no push/email infra.
 - Out of scope (spec + STRATEGY): home value/finance, smart home,
   tutorials, contractor marketplace, household inventory.
@@ -68,8 +95,8 @@ via a subscribed ICS feed.
    follow-through. Wizard without feed is a listicle; feed without wizard
    is another reminder app. Neither half is secondary.
 2. Demand beyond n=1 is unverified. Bar: 10 unrelated first-time owners
-   complete wizard + subscribe; 5 or more complete a task within 30 days
-   unprompted. Until then, conviction not evidence.
+   complete wizard + subscribe; 5 or more complete a task within 45 days
+   unprompted (widened from 30 by Y3). Until then, conviction not evidence.
 3. Real competitor is "nothing + ad-hoc list", not incumbents. Winning
    axis: minutes-to-value and living in the user's existing calendar.
    Feature count cannot beat free incumbents.
@@ -77,8 +104,13 @@ via a subscribed ICS feed.
    A stranger needs something live to sign up for and complete end-to-end,
    so the smallest live loop ships first and recruiting runs against it.
    Anything that does not serve a stranger completing the loop is deferred.
-5. Trust is table stakes post-Centriq: full data export from day one;
-   reminders that outlive the app.
+5. (Corrected by P9.) Trust is table stakes post-Centriq: full data export
+   from day one, and **a downloadable copy that outlives the app** — the
+   `.ics` snapshot and the JSON export are files the user holds, which survive
+   us completely and simply stop updating. The original wording said
+   "reminders that outlive the app", which is not true of a subscribed feed:
+   the feed is a live pointer at our server, not a copy the user owns, and it
+   goes silently stale the moment we stop answering.
 6. (Revised after cross-model challenge.) The ACTIVATION LOOP (credible
    schedule in minutes leading to a subscription) is the asset v1 exists to
    test. The rules dataset is the liability surface and the credibility
@@ -125,12 +157,16 @@ deep-linking to mark-done pages. Rejected nothing material.
 
 ### Approach A: The Live Loop (minimal viable) — CHOSEN
 
-No accounts. Anonymous home with three opaque tokens: an edit URL
-(bookmark to return; losing it means redoing a ~3-minute wizard), a
-read-only /calendar/[token].ics feed URL that never grants plan-edit
-access, and a completion-scoped action token embedded in event links (mark
-done only, never plan edits; anyone seeing the shared household calendar
-can mark done, which is intended). Six-question branching wizard: a
+No accounts. Anonymous home with three opaque tokens: an edit URL (bookmark to
+return; losing it is recoverable by rotation per Y2), a
+/calendar/[token].ics feed URL, and an action token embedded in event links.
+Per Y5, the feed URL is **not** read-only: C1 derives the action token from it,
+so anyone holding the feed URL can also operate tasks (mark done, unmark,
+snooze, not-applicable) and view the plan. That is intended — anyone seeing the
+shared household calendar can act on it (C5/D6). What the feed URL never
+grants is answers, home edits, email, or token display; those stay edit-token
+only. Not-applicable is a removal from someone's plan, so like every other
+action-token operation it is logged and reversible. Six-question branching wizard: a
 dwelling-type gate up front, then five category questions over six
 high-value categories (HVAC filter, water heater, smoke/CO alarms, dryer
 vent, gutters, sump pump), building the plan live on screen with surprises
@@ -209,8 +245,13 @@ have been improvised at build time.
 | 10 | Lost link recovery | Honest mailto recovery (C9), or start over with the cost stated |
 
 The subscribe fallback (copyable feed URL plus per-client instructions) lives
-under the primary button on surface 5, always present, not shown on error. A
+under the primary button on surface 6, always present, not shown on error. A
 webcal handoff cannot report failure, so the fallback cannot be conditional.
+
+Surface numbers throughout this section are the ten-surface inventory above.
+(CEO review, 2026-08-01: C4 inserted the "already doing?" checklist as surface 5
+and C9 renumbered to ten without updating any back-reference, leaving every
+reference from 5 upward off by one. All corrected below.)
 
 ### Information architecture (D1 to D4)
 
@@ -224,7 +265,7 @@ webcal handoff cannot report failure, so the fallback cannot be conditional.
   the event the validation bar counts.
 - **D3. Persistent header on every screen**, including the wizard: wordmark,
   route to the full plan, position indicator. Fixes the trunk-test failure on
-  surface 7, which after day one is the product's real front door.
+  surface 8, which after day one is the product's real front door.
 - **D4. Live plan is a pinned collapsed count bar on mobile**, expanding as an
   overlay. The question never moves as the plan grows. On desktop the plan is
   always visible (see Responsive).
@@ -239,9 +280,9 @@ deadline pressure.
 | Landing + Q1 | static, no fetch | n/a | n/a | n/a | n/a |
 | Wizard question | options disabled, count animates, skeleton rows past 400ms | n/a | answer failed to save: inline retry under the question, answer preserved | next question slides in | skip yields a "we could not tell" resolvable task |
 | Live plan panel | skeleton rows | "answer a couple more and your plan starts filling in" | keeps last good state, shows "could not refresh" | count animates old to new | partial rules noted as "based on what you have told us" |
-| Result page | skeleton headline and list | surface 6 reframe | plan not found: surface 9 | surface 5 | skipped questions listed as "resolve later" tasks |
+| Result page | skeleton headline and list | surface 7 reframe | plan not found: surface 10 | surface 6 | skipped questions listed as "resolve later" tasks |
 | Subscribe | button disabled state | n/a | fallback always present, never conditional | no client callback exists: show "added? here is how to check" | n/a |
-| Mark done | button disabled state | n/a | write failed: keep the form, inline retry, never lose the note | surface 8 plus next due date | already logged: show who and when, offer unmark |
+| Mark done | button disabled state | n/a | write failed: keep the form, inline retry, never lose the note | surface 9 plus next due date | already logged: show who and when, offer unmark |
 | Export / snapshot | button disabled state | n/a | download failed: retry link | browser download plus inline confirmation | n/a |
 
 Three states carry specific decisions:
@@ -289,9 +330,14 @@ Two decisions come out of the arc:
   user's first completion looks like it failed, on the exact action the 30-day
   bar counts.
 - **D10. State the trust promise where trust is decided.** One line on the
-  result page about export and outliving the app (premise 5), separate from the
-  export action itself, which stays in the disclosure. The promise is for the
-  person deciding to subscribe; the button is for a power user.
+  result page about export and outliving the app (premise 5). **Amended by
+  P9:** the promise is the *downloadable copy*, not the feed — a subscribed
+  feed is a live pointer at our server, and saying it outlives us is not true.
+  The trust line names the `.ics` snapshot and JSON export and links to them
+  from there, so the promise and the thing that keeps it are in the same place.
+  "Add to my calendar" remains the only full-weight button (D2); this promotes
+  the snapshot out of the disclosure into the trust line, not into a competing
+  CTA.
 
 ### Copy rules
 
@@ -403,7 +449,18 @@ Added by /plan-eng-review on 2026-07-31. Twelve findings (E1-E12), all
 resolved; each was individually approved. This section settles the plan's
 former eng open questions.
 
+> **How to read this section.** Every `E`-item below that a later round changed
+> carries a `SUPERSEDED BY` line naming the amendment that governs. Where an
+> E-item and an amendment disagree, **the amendment wins** and the E-text is
+> kept only as the decision trail. Rounds in order: **E** (eng review) → **C**
+> (Codex) → **X** (CEO review) → **Y** (outside voice) → **P** (self-hosted
+> pivot). Added by the second eng review after it found nine amended E-items
+> with no marker and two still stating superseded values as fact.
+
 ### Service layout (E1)
+
+> SUPERSEDED BY X2 — `services/rules` exports a version-keyed registry, not a
+> flat typed import.
 
 - `services/web` — the SvelteKit app (all routes, UI, feed endpoint).
 - `services/rules` — the versioned rules dataset: JSON data + zod contract +
@@ -414,12 +471,18 @@ former eng open questions.
 
 ### Data access (E2)
 
+> SUPERSEDED BY P1 — Supabase is gone. Self-hosted Postgres in Docker Compose;
+> the service-role key and deny-all RLS posture no longer exist.
+
 - All DB access through SvelteKit server routes using the service-role key
   (server env only). The browser never holds any Supabase key.
 - RLS enabled on every table with zero policies (deny-all): a leaked anon
   key reads nothing. No client-direct Supabase access in v1.
 
 ### Tokens (E3)
+
+> SUPERSEDED BY C1 (derivation chain), C5 (action-token scope), Y2 (rotation),
+> and P3 (in-process rate limiting).
 
 - Three independent capability tokens per home (edit / feed / action),
   each ≥128-bit crypto-random (base64url).
@@ -429,8 +492,14 @@ former eng open questions.
 
 ### Feed semantics (E4)
 
+> SUPERSEDED BY C6 — occurrence identity is the sequence index, NOT the due
+> date. The UID line below is the superseded value; do not implement it.
+
 - Discrete regenerated events, NOT RRULE. Horizon: next 18 months per task.
-- UID = `{taskId}-{dueDate}@firsthome.tools` — stable by construction.
+- UID = `{taskId}-{seq}@firsthome.tools` (C6 — deterministic occurrence index
+  from the anchor). The original E4 value was `{taskId}-{dueDate}`, which
+  churns event identity on snooze or re-anchor and leaves ghost events in
+  every subscribed client.
 - All-day DATE values (no TZID). Completed occurrences retained with a ✓
   title prefix (D9). `METHOD:PUBLISH`, `X-WR-CALNAME: The Almanac of
   {home name}`.
@@ -445,6 +514,10 @@ former eng open questions.
 
 ### Data model (E6)
 
+> SUPERSEDED BY C6 (completions keyed on `seq`, not `due_date`), Y6
+> (`unresolved` status), Y7 (answer-change reconciliation), and P1 (plain
+> Postgres types, no Supabase). Corrections are applied inline below.
+
 Rules live in services/rules (versioned JSON), never in the DB.
 
 ```
@@ -453,30 +526,59 @@ homes
   edit_token_digest · feed_token_digest · action_token_digest
     (each unique, indexed)
   recovery_email text null (D18/E10) · created_at
+  subscribed_at timestamptz null
+    -- C3 required this column and E6 never had it; three review rounds read
+    -- past the omission. Set ONCE, on the poll that first crosses the
+    -- ">=2 fetches >=6h apart" threshold, and never updated. That set-once
+    -- behavior IS the dedup — without it, "subscribed homes" degrades into a
+    -- count over feed_fetches that drifts as clients keep polling.
 
 tasks
   id uuid pk · home_id fk · rule_id text · rule_version text
-  status: active | not_applicable · interval_months int
-  next_due date · snoozed_until date null · custom_name text null
+  status: active | unresolved | not_applicable   -- unresolved added by Y6
+  interval_months int
+  next_due date null · snoozed_until date null · custom_name text null
   unique (home_id, rule_id)
+  -- Y6: `unresolved` is the "we could not tell" task D7 promises when the
+  -- user skips an "I'm not sure". It renders on the result page under
+  -- "resolve later", has no next_due, and is EXCLUDED from the feed (no
+  -- credible due date yet). It resolves when the user answers the skipped
+  -- question from the plan page, becoming `active` with a normal anchor or
+  -- `not_applicable`.
 
 completions
-  id uuid pk · task_id fk · due_date date · done_at timestamptz
+  id uuid pk · task_id fk · seq int · due_date date · done_at timestamptz
   done_by: me | pro · note text · undone_at timestamptz null
-  unique (task_id, due_date) where undone_at is null
+  unique (task_id, seq) where undone_at is null
     -- D6: one row per real completion; double-tap hits the constraint
+    -- C6: keyed on seq, NOT due_date. The original E6 constraint was
+    -- `unique (task_id, due_date)`, which breaks the moment a snooze or
+    -- re-anchor moves the date. due_date is retained as a denormalized
+    -- record of when the occurrence was due, never as identity.
 
 analytics_events
   id bigint pk · home_id fk null · event text · ts timestamptz · meta jsonb
-  -- wizard_started, wizard_completed, first_surprise, subscribed,
-  -- task_completed; server-written only; no PII in meta
+  -- wizard_started (Y4: first answer submitted, NOT page load),
+  -- landing_arrival, wizard_completed, first_commonly_missed (Y9),
+  -- subscribed, task_completed; server-written only; no PII in meta
+
+feed_fetches
+  id bigint pk · home_id fk · ts timestamptz · user_agent text · status int
+  -- C3: every feed fetch logged raw; `subscribed` = >=2 fetches >=6h apart.
+  -- P5: written on the 304 path as well as the 200 path. A 304 is the
+  -- strongest evidence of a real polling client; skipping it undercounts
+  -- exactly the subscribers whose calendars are working.
 ```
 
-`due_date` on completions ties each completion to a feed occurrence (the ✓
+`seq` on completions ties each completion to a feed occurrence (the ✓
 rendering). `rule_version` pins which dataset produced the task — the
 liability trail.
 
 ### Rules contract (E7)
+
+> SUPERSEDED BY C2 (each rule declares its due-date anchor), C7 (governance
+> and the human truth-check), and X2 (version-keyed registry). Authoring
+> method: `docs/ai/RULES-SOURCING.md`.
 
 - Zod schema: id, title, area (Safety/Systems/Exterior/Interior),
   applicability conditions over the answer vocabulary, interval_months,
@@ -488,6 +590,9 @@ liability trail.
 
 ### Schedule module (E8)
 
+> SUPERSEDED BY C2 (anchors), Y7 (answer-change reconciliation), and P4
+> (the clock is an argument, never read from the system inside the module).
+
 One pure module (`services/web/src/lib/schedule.ts`) owns all date math:
 occurrence expansion, next_due advancement, snooze, due-classification.
 Table-driven gate tests. Locked semantics:
@@ -498,8 +603,16 @@ Table-driven gate tests. Locked semantics:
 3. Completing re-anchors the next occurrence from done_at's date, not the
    original due date. (Future calendar events shift after completion —
    intended.)
+4. **(P4)** The module is pure in the strict sense: it never calls
+   `new Date()`. Every function that needs "now" takes it as a parameter.
+   This is what makes rule 2 implementable, makes the E11 table tests
+   deterministic, and makes the golden-file ICS test possible at all.
 
 ### Server error semantics (E9)
+
+> SUPERSEDED BY X1 (feed-generation failure) and P2 (feed fallback is an
+> in-process LRU; analytics writes are genuinely fire-and-forget again now
+> that a long-running process owns them).
 
 1. Unknown/invalid token on any capability route → lost-link screen with
    HTTP 404; identical response shape and timing for malformed vs absent
@@ -508,9 +621,15 @@ Table-driven gate tests. Locked semantics:
    with the existing completion row; UI renders the already-done state.
    Never a 500.
 3. Analytics inserts are fire-and-forget: a failed write logs and never
-   fails the user's request.
+   fails the user's request. **(P2)** On a long-running Node process this
+   works as written — the promise settles after the response. It would NOT
+   have worked on serverless, where the platform can reclaim the function
+   the moment the response returns; the pivot removed that hazard.
 
 ### Email recovery (E10)
+
+> SUPERSEDED BY Y2 — recovery is token rotation, not retrieval. A SHA-256
+> digest cannot be reversed, so there was never anything to resend.
 
 Capture-only in v1: store recovery_email, copy reads "save my email for
 recovery" (no instant send). Manual founder recovery at spike scale.
@@ -520,26 +639,40 @@ recovery email deferred to phase 2."
 
 ### Test matrix (E11)
 
+> SUPERSEDED BY P4 — the golden-file test as originally written could not
+> pass twice. It needs a frozen clock and a pinned DTSTAMP.
+
 - **Gate lane** (Vitest, pre-commit alongside tools/gate.mjs, <2s):
   rules contract + cross-check, schedule table tests, plan builder
   (answers → applicable rules), ICS golden-file.
 - **Golden-file ICS test**: fixture home, feed output byte-compared to a
   checked-in .ics; UID/DTSTART/property churn becomes a failing diff.
+  **(P4)** The generator is called with a frozen date and a pinned
+  `DTSTAMP`. Without both, the test fails on its second run for reasons
+  unrelated to any change: `DTSTAMP` is the generation time, and the
+  18-month horizon shifts the event set daily. A golden file that goes red
+  on its own gets deleted within a week, taking the only UID-churn check
+  with it.
 - **E2E lane** (Playwright, CI + pre-deploy, not pre-commit): full loop
   (landing → wizard → result → feed fetch), condo ≤2-surprise reframe,
   double-tap mark-done idempotency, invalid-token → recovery.
 - **Manual client matrix** (final build day, already planned):
   Apple / Google / Outlook subscribe, poll, event-open, mark-done.
 - Evals: none — v1 has no latent behavior.
-- 24 test requirements enumerated in the eng-review test plan artifact
-  (`~/.gstack/projects/zacgoodwin-FirstHome.tools/`); implementation writes
-  each test alongside its feature, never as a follow-up.
+- 24 test requirements enumerated in `docs/ai/TEST-PLAN.md` (moved in-repo by
+  the CEO review; it previously lived only under
+  `~/.gstack/projects/zacgoodwin-FirstHome.tools/`, which is machine-local and
+  not in git while the eng spec depends on it). Implementation writes each
+  test alongside its feature, never as a follow-up.
 
 ### Feed route caching (E12)
 
+> SUPERSEDED BY C3 (subscribed definition), X1 (failure semantics), and P5
+> (the 304 path still logs the fetch, and an in-process hash map lets the
+> comparison happen before generation).
+
 ETag from the feed body hash; `If-None-Match` → 304 with no body;
-`Cache-Control: max-age=3600`. (Subscribed-event definition superseded by
-C3 below.)
+`Cache-Control: max-age=3600`.
 
 ### Codex-round amendments (C1-C9)
 
@@ -593,12 +726,347 @@ and four tightenings; all were resolved by explicit decision:
   already-done counted separately). HEALTH-METRICS amended: active home =
   anonymous home with ≥1 completion or ≥1 feed poll in the window.
 
+### CEO-round amendments (X1-X4)
+
+Added by /plan-ceo-review on 2026-08-01 (SELECTIVE EXPANSION). Four findings
+the eng, design, and Codex rounds missed; each individually approved.
+
+> X-round hosting note: **X1 is superseded by P2**, **X3's mechanism by P3**,
+> and **X4 entirely by P7**. Their findings stand; the fixes were rewritten for
+> self-hosting.
+
+- **X1 — Feed route failure semantics (amends E9 and E12).** E9 defined error
+  behavior for invalid tokens and double mark-done but never for the feed
+  route failing to generate (DB unreachable, rules load failure, ICS library
+  throw). An unhandled 500 there is invisible in three directions: the
+  calendar client keeps its last snapshot and retries quietly, the user sees a
+  frozen calendar that looks fine, and the C3 subscribed metric silently
+  undercounts homes that really did subscribe. Fix: cache the last
+  successfully generated feed body per home; on any generation failure serve
+  that body with 200, log full context (home id, failing stage, rule version),
+  and increment a `feed_generation_failed` counter. A feed route must never
+  return 5xx to a calendar client. Gate test: a forced generation failure
+  still returns a valid, parseable feed.
+- **X2 — Version-keyed rules registry (amends E1 and E7).** C7 requires that
+  tasks render from their pinned `rule_version` forever, but E1 described a
+  single typed import, which resolves to exactly one version. Fix: the
+  services/rules contract is `getRule(ruleId, version)` plus
+  `getCurrentDataset()`, backed by a registry holding every published dataset
+  version addressably. Nothing is ever removed. Gate tests: every
+  `rule_version` referenced by a fixture resolves; the registry's version list
+  is append-only. Define the not-found path explicitly rather than relying on
+  policy — a task pinning an unresolvable version renders its stored title
+  with a "rule version unavailable" note and logs, never throws.
+- **X3 — Wizard route rate limiting and request logging (amends E3).** E3
+  rate-limited token-bearing routes only, leaving home creation — the one
+  unauthenticated write path — uncapped. The exposure is not data (deny-all
+  RLS, no PII) but measurement: every number in Success Criteria derives from
+  these writes, and a crawler on the outreach link inflates `wizard_started`
+  against a real completion count. Fix: per-IP limit on home creation, plus
+  request logging (hashed IP, user-agent, route, timestamp) on all wizard
+  routes so a suspicious day can be audited after the fact. No captcha — it
+  would cost real completions on a flow whose pitch is three minutes and no
+  signup.
+- **X4 — Production hostname is the only subscribable URL (amends the
+  Distribution Plan).** Vercel issues an ephemeral preview URL per branch and
+  PR. A subscribed feed URL is absolute and stored by a third party for
+  months, so a subscription created against a preview deployment dies when
+  that preview is torn down — silently, per X1. Fix: attach the
+  firsthome.tools domain before the Apple/Google client matrix runs, and never
+  create a subscription (test or tester) against a preview or `*.vercel.app`
+  hostname. The technical gate phase 1 is committed behind must be passed on
+  the URL that survives.
+
+### Outside-voice amendments (Y1-Y10)
+
+A second independent Codex pass, run after the CEO review's own sections,
+returned ten findings. All ten were presented and individually approved.
+
+- **Y1 — Notification behavior is spiked before the build, not after (amends
+  Approach A and the manual client matrix).** Events carry no VALARM by
+  design, so whether the user is ever notified depends entirely on client
+  defaults for a *subscribed* calendar — historically the weakest notification
+  path on both platforms (iOS commonly strips alerts on subscribed calendars;
+  Google does not reliably notify on subscribed all-day events). Premise 1
+  makes calendar delivery half the product, and the 30-day bar counts an
+  unprompted completion whose only prompt is the calendar. **Action: before
+  the scaffold ticket, hand-write a minimal ICS feed, host it, and subscribe
+  from a real iPhone and a real Google account. Test with and without VALARM.
+  Write the result and the fallback into this plan.** If nothing fires, the
+  fallback options are a VALARM anyway, a weekly digest event, or explicit
+  in-product instructions telling the user to enable alerts on the subscribed
+  calendar — chosen with data, not under launch-week pressure.
+- **Y2 — Edit-token rotation (amends E3 and E10).** The HKDF chain (C1) makes
+  the edit token the root: nothing derives it, and E3 stores only its digest.
+  So E10's "manual founder recovery" had nothing to recover — a hash is
+  one-way. Fix: recovery is rotation, not retrieval. A founder-run rotation
+  mints a new edit token, re-derives feed and action beneath it, updates all
+  three digests, and mails the new URL to `recovery_email`. No plaintext is
+  ever stored and the digest-only posture is preserved. Honest cost, stated in
+  the copy: rotating the edit token rotates the feed token under it, so the
+  user's calendar subscription breaks and must be re-added.
+- **Y3 — Validation window widened to 45 days (amends Success Criteria and
+  C2).** C2 claimed monthly tasks made a 30-day bar reachable for every home.
+  Setup plus one calendar month is 28-31 days, then polling lag on top, so the
+  first monthly occurrence routinely lands past day 30. The bar was unmeetable
+  by construction. Fix: the window is 45 days. C2's anchoring is unchanged —
+  front-loading a task is a lie about when it is due, and the honest fix is a
+  longer window, not an earlier date.
+- **Y4 — "Wizard started" redefined (amends Success Criteria).** D1 merged
+  landing and question 1 into one static screen with no fetch, while Success
+  Criteria defined a start as a server request for step 1. Either the event
+  never fires or it counts crawlers and link previews. Fix: **a wizard start is
+  the first answer submitted.** Server-observable, immune to crawlers, and it
+  makes the 60% completion target mean what it was intended to mean. Landing
+  arrivals are counted separately as their own funnel step, never folded into
+  the completion rate.
+- **Y5 — The feed token is not read-only; say so (amends the Approach A
+  wording and C5).** C1 derives the action token from the feed token, so every
+  feed-URL holder can derive task authority. C5 already decided that household
+  members operating tasks is intended, so the capability is correct and the
+  *description* was wrong. Fix: strike "read-only" from the feed-URL
+  description and state the real boundary — the feed URL grants task
+  operations, never answers, home edits, email, or token display. Additionally:
+  not-applicable is a removal, not just an operation, so it must be reversible
+  and logged like every other action-token op (C5 already requires this; make
+  it explicit for not-applicable specifically).
+- **Y6 — `unresolved` task status (amends E6 and D7).** D7 promises that
+  skipping "I am not sure" still yields a "we could not tell" resolvable task,
+  but `tasks.status` allowed only `active | not_applicable`. Fix: the enum is
+  `active | unresolved | not_applicable`. An `unresolved` task renders on the
+  result page under "resolve later", is excluded from the feed (it has no
+  credible due date yet), and resolves when the user answers the skipped
+  question from the plan page — at which point it becomes `active` with a
+  normal anchor, or `not_applicable`.
+- **Y7 — Answer-change reconciliation (amends E6 and E8).** The edit token
+  exists so a user can return and change answers, and nothing defined what
+  happens to materialized tasks when they do. Fix, stated once: re-running the
+  rule set against new answers **adds** newly applicable tasks with a normal
+  anchor; **deactivates** (never deletes) tasks whose applicability no longer
+  holds, marking them `not_applicable`; and **always preserves completion
+  history** on deactivated tasks. Re-activating a task restores it with its
+  history intact and re-anchors from the most recent completion if one exists,
+  otherwise from the change date.
+- **Y8 — Tester uniqueness is confirmed by hand, and that limit is written
+  down (amends Success Criteria).** `?tester=NN` attributes a home to a link,
+  not to a person; one person can run the wizard repeatedly. At n=10 the
+  correct instrument is not telemetry, it is knowing who the ten are. Fix: the
+  founder confirms each of the ten by name and first-time-owner status
+  manually, and the plan states plainly that the attribution parameter is a
+  convenience, not proof.
+- **Y9 — "First surprise" renamed to what it measures (amends Success
+  Criteria).** The event fires on a rule flagged `commonly_missed`, which is
+  editorial judgment, while whether *this* user knew is only collected in C4's
+  wizard-end checklist. Fix: the timing metric is renamed
+  **"time to first commonly-missed task"** and keeps its sub-90-second target
+  as an engagement measure. The discovery claim (premise 1) is carried by the
+  C4 checklist alone.
+- **Y10 — Roadmap gates get numbers (amends `docs/ai/ROADMAP.md`).** Phase 2
+  entered on a "clear signal", phase 3 on an N to be chosen later, phase 4 on
+  "retention proven", phase 5 on "worth intelligence spend". Those are not
+  gates; they are the same disease as the missing kill criteria, one layer up.
+  Fix: phase 2 and phase 3 get real numbers now, later phases are explicitly
+  marked as needing their number set at the prior phase's exit rather than
+  pretending to have one. Also reconciled: the Almanac PDF booklet entered
+  phase 1 while print layouts were deferred until after validation — the
+  booklet ships as a screen-first share artifact in phase 1, and print
+  layout work stays deferred.
+
+### Self-hosted pivot amendments (P1-P8)
+
+Added by the second /plan-eng-review on 2026-08-01. Mid-review the founder
+pivoted hosting: **self-hosted Docker Compose, founder-operated infrastructure,
+no Vercel, no Supabase, no managed KV.** This section supersedes every hosting
+assumption in E1-E12, C1-C9, X1-X4 and Y1-Y10.
+
+**What the pivot deleted.** Four findings raised earlier in this same review
+existed only because of serverless, and are void rather than fixed:
+
+| Finding | Why it was a problem | Why it is gone |
+|---|---|---|
+| Feed cache had nowhere to live | Serverless has no memory between invocations, so the cache had to be in the DB, which was one of the failures it was meant to survive | A long-running process has memory (P2) |
+| Rate limiter had no shared store | A module-scope `Map` silently does nothing across serverless instances | A single container makes that `Map` correct (P3) |
+| Fire-and-forget writes get killed | The platform can reclaim the function when the response returns | A real Node process finishes the promise (E9.3, annotated) |
+| KV failure postures undefined | KV was introduced to solve the two above | KV is gone entirely |
+
+Net: the pivot removed a paid dependency, a platform API, and two failure
+postures. It is a simplification, not a lateral move.
+
+- **P1 — Stack (supersedes E2 and the Distribution Plan).** Docker Compose,
+  three services: the SvelteKit app on `@sveltejs/adapter-node`, **Postgres
+  17**, and **Caddy** terminating TLS with automatic certificates. Supabase is
+  removed: `node-postgres` plus a migration tool replace the Supabase client.
+  E2's service-role key and deny-all RLS were bought as a pair with Supabase
+  and are replaced by a simpler, equally sound posture: **the app process is
+  the only client that can reach the database.** Postgres binds to the Compose
+  network only, never a published host port; credentials live in env, never in
+  the image. The browser holds no database credential of any kind, which was
+  E2's actual goal.
+  **Named volumes are required, not optional (P1a, outside voice #5).** The
+  Postgres data directory and Caddy's `/data` and `/config` each get a named
+  volume. Without them the database lives in the container's writable layer
+  and a `down -v`, a `--force-recreate`, or a routine image update deletes
+  every home, task and completion — while every other stated check (TLS
+  serving, migrations run, no published Postgres port) still passes. Caddy's
+  certificate and ACME account state has the same exposure, with Let's Encrypt
+  rate limits as the second-order cost. `docker compose down -v` is destructive
+  and is never part of a deploy.
+  Database rationale, recorded so it is not re-litigated: the workload (four
+  tables, ~2,000 rows at the 90-day target, ~800 feed-fetch writes/day, no
+  joins deeper than home→tasks→completions) would run fine on SQLite, and the
+  two schema features that look Postgres-specific are not (`answers jsonb` is
+  written once and read whole; SQLite has had partial indexes since 3.8).
+  Postgres wins on two non-performance grounds: `pg_dump` is a boring,
+  restorable backup story that self-hosting now makes the founder's problem,
+  and roadmap phases 3-6 (documents, asset records, multi-property) land in
+  Postgres territory anyway. Migrating real users' maintenance history later is
+  a worse day than running one more container now.
+- **P2 — Feed fallback is in-process (supersedes X1).** Keep an LRU of the last
+  successfully generated feed body per home in the app process. On a rules-load
+  or ICS-library failure, serve the cached body with 200. When **Postgres**
+  itself is unreachable there is nothing honest to serve, so return **503 with
+  `Retry-After`** — a calendar client retries a 503 and does not retry a 200
+  containing stale events. Increment `feed_generation_failed` on all three
+  paths and log the failing stage. X1's "never 5xx to a calendar client" was
+  too absolute; a 503 meaning "come back shortly" is exactly what the status
+  code is for.
+  **Cold cache (P2a, outside voice #4).** The LRU is empty after every restart,
+  and stays empty *per home* until that home's next successful generation —
+  which for a home nobody polls can be a long time, not a two-second window.
+  So the rule is uniform: **serve the cached body when one exists, 503 with
+  `Retry-After` when one does not**, incrementing the counter either way.
+  "Costs one regeneration" assumed the regeneration succeeds, and the entire
+  point of this fallback is the case where it does not. The riskiest moment is
+  immediately after a deploy, because a bad rules dataset is exactly what you
+  just shipped.
+- **P3 — Rate limiting is in-process (supersedes X3's mechanism question).** A
+  module-scope sliding-window limiter keyed on client IP, applied to home
+  creation and to token-bearing routes. Correct for a single container, no
+  dependency, no shared store. **Caddy sits in front, so the app must read the
+  client IP from `X-Forwarded-For` and Caddy must be configured to set it** —
+  without that every request appears to come from the proxy and the limiter
+  rate-limits the whole world as one client. This is the single most likely way
+  to get this wrong. If the app is ever scaled past one replica, this limiter
+  becomes per-replica and must be revisited; note it at that moment, not now.
+- **P4 — The clock is an argument (amends E8 and E11).** `schedule.ts` and the
+  feed generator never call `new Date()`. Every function needing "now" takes it
+  as a parameter. This is what makes E8's local-date rule implementable, makes
+  the E8 table tests deterministic, and makes the golden-file ICS test possible:
+  the fixture passes a frozen date and a pinned `DTSTAMP`, so the byte
+  comparison covers only what the code actually generates.
+- **P5 — A 304 still logs the fetch (amends E12 and C3).** C3 counts polls, and
+  a poll answered with 304 is the *strongest* evidence of a real subscribed
+  client. Skipping the log on that path would undercount exactly the
+  subscribers whose calendars are working best, on the number the premise-2 bar
+  reads. So `feed_fetches` is written on both the 200 and 304 paths. To keep
+  the 304 genuinely cheap, hold an in-process map of home id → last body hash
+  so `If-None-Match` short-circuits **before** generation; rebuilt on restart,
+  where a cold start simply regenerates once.
+- **P6 — The ops surface self-hosting creates (new, founder-owned).** Three
+  things Vercel and Supabase were doing silently are now explicit
+  responsibilities, and premise 5 (the trust promise that the data outlives the
+  app) now rests on the first of them:
+  1. **Backups.** `pg_dump` on a schedule to storage that is not the same disk
+     as the database, with a restore that has actually been run once. An
+     untested backup is not a backup.
+  2. **TLS and DNS.** Caddy automates certificates; the domain must resolve
+     publicly. Apple's and Google's servers poll the feed from the public
+     internet, so a VPN-only, Tailscale-only, or CGNAT-bound host cannot serve
+     this product at all.
+  3. **Uptime, and it is monitored (P6a, outside voice #6).** The feed is
+     polled by third parties on their schedule, and a host that is down when
+     Google polls produces a silently stale calendar — the failure mode this
+     plan keeps circling, and the only failure in the system with no observer.
+     The user sees a calendar that looks unchanged; you see requests that
+     simply stop arriving. P6 originally named this risk and implemented
+     nothing. The full checklist is now in scope:
+     - `restart: unless-stopped` on every service (survives crash and reboot)
+     - container health checks on app and Postgres
+     - an **external** uptime probe fetching the real feed URL every few
+       minutes, alerting to email. It must be external: a check inside the
+       same Compose stack cannot detect an unreachable host, which is the case
+       that matters.
+     - disk-space alarm (the `feed_fetches` table and `pg_dump` output both
+       grow unattended)
+     - certificate-expiry and DNS-resolution alarms
+     - a reboot-start test: reboot the host once and confirm the stack comes
+       back with data intact and TLS serving
+     - a written outage runbook: how to tell which layer is down, and the
+       commands to bring each back
+- **P7 — The feed hostname is permanent (supersedes X4).** X4 was about Vercel
+  preview URLs, which no longer exist. The underlying hazard survives and gets
+  worse when you own DNS: **a subscribed feed URL is absolute and is stored by
+  Apple and Google for months.** Once a home subscribes, that hostname can
+  never change without silently breaking every subscriber, and there is no
+  redirect a calendar client honors indefinitely. So: the production hostname
+  is chosen and pointed before the first subscription is ever created, test
+  subscriptions included, and it is treated as permanent from that moment.
+- **P8 — Deploy (supersedes the Distribution Plan's auto-deploy-on-push).**
+  There is no push-to-deploy. The delivery contract is a versioned container
+  image plus a `compose.yaml`, an `.env.example` naming every required
+  variable, and migrations that run on container start before the server
+  accepts traffic. How the image reaches the host (registry pull, build on
+  host, or otherwise) is founder-owned infrastructure and deliberately not
+  specified here.
+  **Deploy must be undoable (P8a, outside voice #7).** P7 makes the feed
+  hostname permanent, so the blast radius of a bad deploy is not "the site is
+  down for ten minutes" — it is the one URL every subscriber's calendar points
+  at, serving errors silently, with no other address to reach them. The likely
+  trigger is concrete: the rules dataset is hand-authored over several sittings
+  and ships as data inside the image (X2), so a malformed rule that clears the
+  gate but throws at load breaks feed generation for every home at once. Four
+  requirements, all cheap:
+  1. `pg_dump` runs immediately **before** migrations, every deploy. Turns a
+     schema mistake from unrecoverable into a restore.
+  2. The previous image tag is retained, and the rollback procedure is two
+     written commands. The difference between five minutes and a midnight
+     debugging session.
+  3. Migrations are **additive-only within a release**: add columns, never drop
+     or rename in the same release that changes application code. This is what
+     keeps rollback possible at all.
+  4. Health-gated cutover (start new, probe, switch traffic) is **deliberately
+     out of scope** for the spike. Revisit when there are enough users that a
+     seconds-long gap costs something.
+
+- **P9 — Premise 5 corrected: the snapshot is what outlives the app (amends
+  premise 5, D2 and D10).** Outside voice #8, and the sharpest thing the pivot
+  broke. Premise 5 promises "reminders that outlive the app". The export half
+  is true. The reminders half is not, and self-hosting made it *less* true than
+  managed hosting: a subscribed ICS feed is not a copy the user owns, it is a
+  live pointer at your server. If the host stops answering, the domain lapses,
+  or you lose interest in eighteen months, every subscriber's almanac freezes
+  silently and none of them is told. Backups preserve rows, not a URL Apple and
+  Google can reach.
+  **Correction:** what outlives the app is the **downloadable `.ics` snapshot
+  and the JSON export** — files the user holds, which survive you completely
+  and simply stop updating. Amend premise 5 to say that. Amend D10's trust line
+  on the result page to promise the copy you can take right now, not an
+  indefinitely-served feed. This shifts D2 slightly: the snapshot moves from
+  "in the disclosure, out of the way" to "named in the trust line, downloadable
+  from there", while "Add to my calendar" stays the single full-weight button.
+  Rejected, on record: a written shutdown commitment to freeze every feed to
+  static object storage at the same hostname forever. It would make the
+  original promise literally true and it binds future-you to renewing a domain
+  and paying for a bucket indefinitely. Revisit if the product reaches a scale
+  where that obligation is proportionate.
+
 ## Open Questions
 
 - Authoritative sources per rule (NFPA, CPSC, manufacturer guidance);
   blocks the rules dataset; owner @Zac. THE remaining critical-path item.
+  **Method now written: `docs/ai/RULES-SOURCING.md` (CEO review) defines the
+  source hierarchy, the disagreement tiebreak, the per-rule acceptance
+  checklist, and the no-authority fallback. The remaining work is doing it,
+  not deciding how.**
 - Official active-user metric: ensure the health metric counts anonymous
   homes (amend alongside the scaffold ticket if it assumes signups).
+  Resolved by the CEO review: HEALTH-METRICS.md already carried the corrected
+  anonymous-home definition; STRATEGY.md's "100 signed-up homeowners" was the
+  stale one and has been corrected.
+- Personal tool or business: resolved as deliberate optionality (premise 7),
+  with the premise-2 bar as the trigger that forces the call and a
+  willingness-to-pay question in the 30-day tester follow-up. See
+  `docs/STRATEGY.md`.
 - Climate/region interval adjustments: v1 ships national defaults with
   per-task override; regionalization deferred (roadmap phase 5).
 - Resolved by design review: dwelling gate (D7 + landing D1), signup
@@ -609,34 +1077,91 @@ and four tightenings; all were resolved by explicit decision:
 
 ## Success Criteria
 
-Event definitions (Supabase analytics table, one row per event, written
+Event definitions (the `analytics_events` table, one row per event, written
 server-side; every definition is a server-observable request, never a
 client render):
-- "wizard started" = wizard step 1 requested from the server.
+- "wizard started" = **first answer submitted** (Y4). Not the landing page
+  request: D1 merged landing and question 1 into one static screen, so a page
+  fetch is not an act of intent and would count crawlers and link previews.
+- "landing arrivals" = requests for the landing surface. Its own funnel step,
+  reported separately, never folded into the completion rate (Y4).
 - "wizard completed" = final wizard step submitted.
-- "first surprise" = first server response for a home that contains a
-  flagged unknown-task rule.
-- "subscribed" = first GET on a home's /calendar/[token].ics feed route
-  (snapshot downloads live on a distinct endpoint and never count; a
-  browser paste of the feed URL counts, an accepted noise floor).
+- "time to first commonly-missed task" = first server response for a home that
+  contains a rule flagged `commonly_missed` (renamed from "first surprise",
+  Y9). This measures editorial flagging and engagement pace, not user
+  discovery. The discovery claim in premise 1 is carried by the C4 wizard-end
+  checklist alone.
+- "subscribed" = a home whose feed route was fetched at least twice, at least
+  six hours apart, i.e. real client polling. `homes.subscribed_at` is set once
+  and is the dedup. Snapshot downloads live on a distinct endpoint and never
+  count; a browser paste no longer counts, because a browser does not
+  re-poll. (Per C3, which supersedes the earlier first-GET definition.
+  HEALTH-METRICS.md already carries this version.)
 - "task completed" = mark-done submitted.
 
+Measurement note: a subscribed feed is polled on the client's schedule, and
+Google in particular can go a day or more between fetches. Under the C3
+definition a home therefore cannot register as subscribed until its client has
+polled twice, so the subscribed count lags reality by up to two days. Launch-day
+numbers reading near zero is expected behavior, not a broken metric.
+
 Criteria:
-- Wizard completion rate >= 60% of starts.
-- Median time-to-first-surprise < 90 seconds from wizard start.
-- Validation bar (premise 2): 10 unrelated first-time homeowners,
-  attributed via ?tester=NN links, complete the wizard and subscribe; 5 or
-  more complete a task within 30 days unprompted. Definitions:
-  "unrelated" = not personally known to the founder; "unprompted" = no
-  founder contact after subscription (the calendar reminder itself is the
-  product working, not a prompt).
+- Wizard completion rate >= 60% of starts (start = first answer submitted, Y4).
+- Median time to first commonly-missed task < 90 seconds from wizard start (Y9).
+- Validation bar (premise 2): 10 unrelated first-time homeowners complete the
+  wizard and subscribe; 5 or more complete a task **within 45 days**
+  unprompted (widened from 30 by Y3 — setup plus one calendar month is 28-31
+  days and polling lag lands on top of that, so a 30-day window was unmeetable
+  by construction). Definitions: "unrelated" = not personally known to the
+  founder; "unprompted" = no founder contact after subscription (the calendar
+  reminder itself is the product working, not a prompt).
+  **Uniqueness is confirmed by hand (Y8).** `?tester=NN` attributes a home to
+  a link, not to a person, and one person can run the wizard repeatedly. At
+  n=10 the instrument is knowing who the ten are: the founder confirms each
+  by name and first-time-owner status. The attribution parameter is a
+  convenience for grouping, never proof of a distinct human.
 - Loop verified end-to-end in both Apple Calendar and Google Calendar
   before any recruiting post goes out.
 
+### What happens when the bar is not met
+
+Added by /plan-ceo-review on 2026-08-01. A gate with no failure branch is
+decoration. These branches are written now, before the data exists, because
+the only moment this call is cheap is the moment you are not looking at your
+own numbers.
+
+| Result | Read | Action |
+|---|---|---|
+| 10 subscribed, 5+ completed | The loop works end to end | Phase 2 (accounts) opens per the roadmap gate |
+| 10 subscribed, few completed | Discovery convinced them; delivery did not carry | Fix delivery. Do NOT build accounts. Suspects, in order: the calendar lag (D9), all-day event notification behavior per client, and whether the task page earns the tap six weeks later |
+| Few subscribed | Either the wizard was not credible, or the post never reached anyone | Re-test distribution before touching the product. **Caveat: this signal is ambiguous by choice.** The distribution pre-flight was proposed and cut (CEO review, risk accepted), so a low subscribe count has two indistinguishable explanations and cannot be separated after the fact. Treat a low number as "unknown", not as "the product failed" |
+| Miss on both | The premise is not carrying | Keep it as the founder's own tool, stop the recruiting spend, and say so out loud. This is the honest branch, and naming it here is what stops it becoming a quiet drift into phase 2 |
+
+The bar is a decision instrument, not a scoreboard. Whichever row it lands on,
+write the reading down with the numbers next to it.
+
 ## Distribution Plan
 
-Web service on the planned Vercel pipeline (/setup-deploy after scaffold;
-auto-deploy on push to main). No binaries, no stores. The premise-2
+**Self-hosted Docker Compose on founder-operated infrastructure (P1, P8).**
+Three services: the SvelteKit app on `@sveltejs/adapter-node`, Postgres 17, and
+Caddy terminating TLS. No Vercel, no Supabase, no managed KV. What ships is a
+versioned container image, a `compose.yaml`, an `.env.example` naming every
+required variable, and migrations that run on start before the server accepts
+traffic. How the image reaches the host is founder-owned and not specified here.
+
+**Per P7: the production hostname is permanent from the first subscription
+onward.** A subscribed feed URL is absolute and is stored by Apple and Google
+for months, so the domain is chosen and pointed before any subscription exists,
+test subscriptions included. Changing it later silently breaks every
+subscriber and no redirect fixes it. (This supersedes X4, which was about
+Vercel preview URLs; the hazard survives the pivot and gets worse when you own
+DNS.)
+
+**The feed must be reachable from the public internet.** Apple's and Google's
+servers poll it on their own schedule. A VPN-only, Tailscale-only, or
+CGNAT-bound host cannot serve this product.
+
+No binaries, no stores. The premise-2
 validation bar runs against Approach A: the launch-day outreach post links
 straight to the wizard. Phase 2's report card is amplification for wider
 cold outreach after the loop is verified; it is not what the bar waits on.
@@ -644,10 +1169,15 @@ cold outreach after the loop is verified; it is not what the bar waits on.
 ## Dependencies
 
 - 15-20 rule dataset with sources for the six launch categories (critical
-  path; everything else is plumbing).
+  path; everything else is plumbing). Method: `docs/ai/RULES-SOURCING.md`.
 - SvelteKit scaffold ticket (first build ticket, already anticipated in
-  CLAUDE.md).
-- /setup-deploy after scaffold.
+  CLAUDE.md), on `@sveltejs/adapter-node` (P1).
+- Compose stack: app + Postgres 17 + Caddy, with `.env.example`, migrations
+  on start, and a `pg_dump` backup with a restore actually rehearsed (P1, P6).
+- Public DNS pointed at the host, TLS live, hostname treated as permanent
+  before any subscription is created (P6, P7). Founder-owned.
+- Notification spike (T-C1) before the scaffold ticket — it can change what
+  the product is.
 - Launch-day outreach post (the Assignment) ready before deploy day.
 
 ## The Assignment
@@ -677,26 +1207,145 @@ critical path without violating premise 4.
 - You archived and re-derived instead of patching. Three premises changed
   and four build details upgraded; the re-run paid for itself.
 
+## Implementation Tasks
+
+Synthesized from the CEO review's findings (2026-08-01). Each task derives from
+a specific finding above. P1 blocks ship; P2 lands same branch; P3 is process.
+
+- [ ] **T-C1 (P1, human: ~3h / CC: n/a)** — spike — verify notification behavior for subscribed all-day events
+  - Surfaced by: Outside voice Y1 — no VALARM, client defaults unknown, and premise 1 makes calendar delivery half the product
+  - Files: throwaway ICS + a host; result written back into this plan
+  - Verify: subscribe from a real iPhone and a real Google account, with and without VALARM; record whether anything notifies
+  - **Runs before the scaffold ticket.** The answer can change what the product is.
+- [ ] **T-C2 (P1, human: ~7-10h / CC: minimal)** — services/rules — source the 15-20 launch rules
+  - Surfaced by: F5 — the critical path had no method; `docs/ai/RULES-SOURCING.md` now defines it
+  - Files: `services/rules/`, `docs/ai/RULES-SOURCING.md`
+  - Verify: every rule passes the per-rule acceptance checklist; gate tests green
+  - Does not compress with CC — a human must read each cited page.
+- [ ] **T-C3 (P1, human: ~3h / CC: ~20min)** — services/rules — version-keyed registry
+  - Surfaced by: X2 — C7 requires rendering historical `rule_version` forever; E1 described a flat import
+  - Files: `services/rules/src/index.ts`, contract + gate tests
+  - Verify: `getRule(id, version)` resolves every fixture version; append-only list; unresolvable version renders a note, never throws
+- [ ] **T-C4 (P1, human: ~3h / CC: ~20min)** — services/web feed route — in-process last-good LRU + failure counter
+  - Surfaced by: X1, rewritten by P2 — feed failure is silent to user, founder, and the subscribed metric
+  - Files: `services/web/src/routes/calendar/[token].ics/+server.ts`
+  - Verify: rules-load or ICS-library failure returns 200 with the cached body; Postgres unreachable returns 503 with `Retry-After`; `feed_generation_failed` increments on all three
+
+- [ ] **T-E1 (P1, human: ~1d / CC: ~1h)** — infra — Compose stack: app + Postgres 17 + Caddy
+  - Surfaced by: P1 — the hosting pivot; nothing runs until this exists
+  - Files: `compose.yaml`, `Dockerfile`, `.env.example`, `Caddyfile`, migration runner
+  - Verify: `docker compose up` on a clean host serves the app over TLS; migrations run before the server accepts traffic; Postgres is not reachable on any published host port; **and state survives recreation** — insert a row, `docker compose down` (no `-v`), `up`, read it back. The first three assertions all pass on a stack that loses every row on restart (P1a), so the fourth is the one that matters.
+- [ ] **T-E7 (P1, human: ~1d / CC: ~1h)** — infra — monitoring and alerting
+  - Surfaced by: Outside voice #6 / P6a — a stale feed is the only failure in the system with no observer
+  - Files: compose restart policies + health checks, external uptime probe config, runbook doc
+  - Verify: external probe fetches the real feed URL and emails on failure; host reboot brings the stack back with data intact; disk, certificate and DNS alarms fire on test
+- [ ] **T-E8 (P1, human: ~3h / CC: ~25min)** — infra — deploy rollback path
+  - Surfaced by: Outside voice #7 / P8a — P7 makes the feed hostname permanent, so a bad deploy has no alternate address
+  - Files: deploy script, migration runner, runbook doc
+  - Verify: `pg_dump` runs before migrations every deploy; previous image tag retained; deliberately deploy a broken image and recover with the two written rollback commands
+- [ ] **T-E9 (P2, human: ~2h / CC: ~15min)** — services/web — snapshot as the trust promise
+  - Surfaced by: Outside voice #8 / P9 — a subscribed feed is a pointer at our server, not a copy the user owns
+  - Files: result page trust line, disclosure block, premise 5 copy
+  - Verify: the trust line names the downloadable copy and links to it; "Add to my calendar" remains the only full-weight button (D2)
+- [ ] **T-E2 (P1, human: ~2h / CC: ~15min)** — services/web — injectable clock
+  - Surfaced by: Eng review Issue 5 / P4 — the golden-file test cannot pass twice without it
+  - Files: `services/web/src/lib/schedule.ts`, feed generator, test fixtures
+  - Verify: grep finds no `new Date()` inside schedule.ts or the generator; the golden-file test passes on two different days
+- [ ] **T-E3 (P1, human: ~1h / CC: ~15min)** — plan doc — mark the nine superseded E-items
+  - Surfaced by: Eng review Issue 4 — nine of twelve E-items amended, one marked; E4's UID and E6's constraint still stated superseded values as fact
+  - Files: `docs/ai/plans/zacgo-main-design-20260727-085637.md`
+  - Verify: every amended E-item carries a `SUPERSEDED BY` line; no two live statements of the same decision (done in this review; re-check after any future round)
+- [ ] **T-E4 (P2, human: ~3h / CC: ~20min)** — services/web — in-process rate limiter behind Caddy
+  - Surfaced by: X3, rewritten by P3 — protects the wizard-start denominator
+  - Files: `services/web/src/hooks.server.ts`, `Caddyfile`
+  - Verify: limiter reads the client IP from `X-Forwarded-For` and Caddy sets it; two requests from different IPs are not counted as one client
+- [ ] **T-E5 (P2, human: ~2h / CC: ~15min)** — services/web — log the fetch on the 304 path
+  - Surfaced by: Eng review Issue 7 / P5 — a 304 is the strongest evidence of a real subscriber, and skipping the log undercounts the premise-2 metric
+  - Files: feed route, `feed_fetches` table
+  - Verify: a conditional request returning 304 still writes a `feed_fetches` row; an in-process hash map short-circuits before generation
+- [ ] **T-E6 (P1, human: ~2h / CC: n/a)** — infra — backup with a rehearsed restore
+  - Surfaced by: P6 — premise 5's trust promise now rests on a backup the founder owns
+  - Files: backup script or cron unit, restore runbook
+  - Verify: a restore has actually been performed once into a scratch database. An untested backup is not a backup.
+- [ ] **T-C5 (P1, human: ~3h / CC: ~25min)** — services/web — edit-token rotation
+  - Surfaced by: Y2 — digest-only storage made E10's manual recovery impossible
+  - Files: token module, recovery route, surface 10 copy
+  - Verify: rotation mints a new edit token, re-derives feed and action, old URLs 404, no plaintext persisted
+- [ ] **T-C6 (P1, human: ~2h / CC: ~15min)** — schema + plan page — `unresolved` task status
+  - Surfaced by: Y6 — D7 promised a "we could not tell" task the schema could not represent
+  - Files: migration, `services/web/src/lib/plan.ts`, result page
+  - Verify: skipping "I'm not sure" yields an `unresolved` task, absent from the feed, resolvable from the plan page
+- [ ] **T-C7 (P1, human: ~1h / CC: ~10min)** — analytics — wizard start fires on first answer
+  - Surfaced by: Y4 — D1's static merged landing made the old definition uncountable or crawler-inflated
+  - Files: wizard route handlers, analytics module
+  - Verify: landing request alone emits no `wizard_started`; first answer emits exactly one; arrivals counted separately
+- [ ] **T-C8 (P2, human: ~2h / CC: ~15min)** — services/web — wizard request logging
+  - Surfaced by: X3 — the unauthenticated write path feeds every validation number. The rate-limiting half moved to T-E4 under P3.
+  - Files: `services/web/src/hooks.server.ts`, analytics module
+  - Verify: every wizard request logged with hashed IP, user-agent, route, timestamp, so a suspicious day can be audited after the fact
+- [ ] **T-C9 (P2, human: ~3h / CC: ~25min)** — services/web — answer-change reconciliation
+  - Surfaced by: Y7 — the edit token exists so answers change, and nothing defined what happens to tasks
+  - Files: `services/web/src/lib/plan.ts`, `schedule.ts`
+  - Verify: adds newly applicable tasks, deactivates without deleting, preserves completion history, restores on re-activation
+- [ ] **T-C10 (P1, human: ~1h / CC: n/a)** — infra — permanent hostname live before any subscription
+  - Surfaced by: X4, rewritten by P7 — a subscribed feed URL is absolute and stored by Apple and Google for months; the hostname can never change afterward
+  - Files: DNS, `Caddyfile`
+  - Verify: firsthome.tools resolves publicly with valid TLS and reaches the app **before** the client matrix runs. Confirm from outside your own network — a host Apple and Google cannot poll cannot serve this product.
+- [ ] **T-C11 (P2, human: ~1h / CC: ~10min)** — spec + copy — feed-token boundary and reversible not-applicable
+  - Surfaced by: Y5 — "read-only" was false once C1 derived action from feed
+  - Files: task page, action-token handlers
+  - Verify: not-applicable is logged and reversible like every other action-token operation
+- [ ] **T-C12 (P3, process)** — confirm tester uniqueness by hand
+  - Surfaced by: Y8 — `?tester=NN` attributes a link, not a person
+  - Verify: each of the ten named and confirmed as a first-time owner
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
-| CEO Review | `/plan-ceo-review` | Scope & strategy | 0 | — | — |
-| Codex Review | `/codex review` | Independent 2nd opinion | 1 | ABSORBED | 11 findings → 9 C-decisions (2 were truncation artifacts) |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 1 | CLEAR (PLAN) | 21 issues (12 review + 9 Codex round), 0 unresolved, 0 critical gaps |
-| Design Review | `/plan-design-review` | UI/UX gaps | 1 | CLEAR (FULL) | score: 4/10 → 9/10, 18 decisions |
+| CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | CLEAR (SELECTIVE_EXPANSION) | 5 proposals, 4 accepted, 1 cut; 4 own findings (X1-X4); 0 unresolved |
+| Codex Review | `/codex review` | Independent 2nd opinion | 3 | ABSORBED | r1: 11 → C1-C9; r2: 10 → Y1-Y10; r3 (post-pivot): 8 → 1 already fixed, 7 accepted |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 2 | CLEAR (PLAN) | r1: 21 issues; r2: 7 issues + hosting pivot (P1-P9), 0 unresolved, 0 critical gaps |
+| Design Review | `/plan-design-review` | UI/UX gaps | 1 | CLEAR (FULL) | score: 4/10 → 9/10, 18 decisions; D10 amended by P9 |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
 
-**CODEX:** outside voice found 5 genuine holes the review missed (token-URL
-generation, due-date anchoring, subscribed definition, action-token scope,
-snooze/UID churn) — all fixed as C1-C9; its scope-cut proposal was rejected
-by explicit decision (C8).
+**CODEX:** three rounds. R1 found five holes the first eng review missed
+(token-URL generation, due-date anchoring, subscribed definition, action-token
+scope, snooze/UID churn) → C1-C9; its scope-cut proposal was rejected on record
+(C8). R2 found ten more, sharpest being that a subscribed calendar may never
+notify at all (Y1), that no edit URL was ever recoverable from digest-only
+storage (Y2), and that the 30-day window was unmeetable against a
+setup-plus-one-month anchor (Y3) → Y1-Y10, all accepted. R3, run against the
+pivoted plan, found eight: one already fixed, and seven accepted covering the
+TEST-PLAN/P2 contradiction, the missing `homes.subscribed_at` column, P2's
+undefined cold cache, missing Compose volumes, unmonitored uptime, undefined
+deploy rollback, and the premise-5 contradiction (P9).
 
-**CROSS-MODEL:** Claude review (12 findings) and Codex (11) overlapped on
-zero items — genuinely complementary passes; every accepted finding from
-both is folded into the Engineering Specification.
+**CROSS-MODEL:** four independent passes (eng r1 12, Codex r1 11, Codex r2 10,
+CEO 9) plus this review's 7 and Codex r3's 8. Overlap remained near zero
+throughout — each pass saw what the others structurally could not. Two
+convergences are worth recording. First, the CEO round's X1 (silent feed
+failure) and Codex r2's Y1 (silent notification failure) are the same disease
+in different layers, found independently: the delivery half of this product is
+where the risk lives. Second, Codex r3 caught two defects *this review
+introduced an hour earlier* — the TEST-PLAN/P2 contradiction and P2's cold
+cache. A reviewer cannot reliably audit its own fresh output; the outside voice
+earned its slot on this run specifically.
 
-**VERDICT:** ENG + DESIGN CLEARED — ready to implement. Scaffold ticket
-(T1) unblocked; rules dataset sourcing (owner @Zac) is the critical path.
+**PIVOT:** hosting changed mid-review from Vercel + Supabase + KV to
+self-hosted Docker Compose (SvelteKit `adapter-node` + Postgres 17 + Caddy),
+founder-operated. It voided four of this review's seven findings outright —
+they were serverless artifacts — and replaced them with a smaller, more
+concrete ops surface (P1-P9). Postgres was re-chosen on merit over SQLite:
+backup story and roadmap phases 3-6, not performance.
+
+**VERDICT:** CEO + ENG + DESIGN CLEARED — ready to implement, with two
+sequencing constraints. **T-C1, the notification spike, still runs before the
+scaffold ticket**: if subscribed all-day events do not notify on Apple and
+Google, the loop as designed cannot close. **T-E1's Compose stack must land
+with named volumes and the survives-recreate check**, because every other
+assertion in it passes on a stack that loses all data on restart. Rules dataset
+sourcing (owner @Zac, method in `docs/ai/RULES-SOURCING.md`) remains the
+critical path beside both.
 
 NO UNRESOLVED DECISIONS

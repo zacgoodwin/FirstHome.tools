@@ -11,8 +11,9 @@ No push notifications, no email infrastructure.
 
 ## Stack
 
-TypeScript 5 / Node 22 / npm, SvelteKit 2 (Svelte 5), Supabase (Postgres +
-auth). Web only. See CLAUDE.md for commands and scope.
+TypeScript 5 / Node 22 / npm, SvelteKit 2 (Svelte 5) on
+`@sveltejs/adapter-node`, Postgres 17, Caddy. Self-hosted via Docker Compose.
+Web only. See CLAUDE.md for commands and scope.
 
 Out of scope: home value / finance features, smart-home integration.
 

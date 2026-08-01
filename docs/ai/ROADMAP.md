@@ -6,8 +6,10 @@ the approved Live Loop plan, two design-board feedback rounds, and 16-site
 competitive research.
 
 Status: PROPOSAL. Nothing below overrides the premise-2 gate: 10 unrelated
-first-time homeowners complete wizard + subscribe, 5+ complete a task in 30
-days unprompted.
+first-time homeowners complete wizard + subscribe, 5+ complete a task in 45
+days unprompted (window widened from 30 by the CEO review, Y3 — setup plus one
+calendar month plus polling lag routinely exceeded 30 days, so the old window
+was unmeetable by construction).
 
 ## The arc
 
@@ -18,11 +20,19 @@ binder becomes the moat. Each phase has a gate; no phase starts on vibes.
 |---|---|---|---|
 | 0 | The Live Loop (spike) | wizard → almanac → calendar feed → mark-done | already approved |
 | 1 | Loop hardening + Report Card | share artifact, outreach | loop survives Apple + Google (technical gate, already committed) |
-| 2 | Keep This Almanac (accounts) | optional accounts, saved homes | premise-2 bar met, or clear signal strangers want to return |
-| 3 | The Binder | service log, documents, systems/assets, month+area views | ≥N active accounts returning monthly (pick N at phase 2 exit) |
-| 4 | The Mail Slot + document intelligence | email-in filing, inspection import, nameplate/manual extraction | binder retention proven |
-| 5 | The Living Almanac | seasonality/region, recalls, warranty expiry, failure foresight, home-aware assistant | platform DAU/MAU worth intelligence spend |
+| 2 | Keep This Almanac (accounts) | optional accounts, saved homes | premise-2 bar met, OR ≥3 of the 10 testers return to their plan URL unprompted after week one |
+| 3 | The Binder | service log, documents, systems/assets, month+area views | ≥25 accounts with ≥1 completion in each of two consecutive months |
+| 4 | The Mail Slot + document intelligence | email-in filing, inspection import, nameplate/manual extraction | number set at phase 3 exit — NOT YET SET |
+| 5 | The Living Almanac | seasonality/region, recalls, warranty expiry, failure foresight, home-aware assistant | number set at phase 4 exit — NOT YET SET |
 | 6 | Beyond the binder | projects & providers, records/insurance/resale, multi-property | each bucket gated separately; see phase 6 |
+
+Gate discipline (CEO review Y10, 2026-08-01): phase 2 previously entered on a
+"clear signal" and phase 3 on an N to be picked later, while phases 4 and 5
+used "retention proven" and "worth intelligence spend". Those are not gates.
+The phase 2 and 3 numbers above are now real and are the ones to argue with.
+Phases 4 and 5 are marked NOT YET SET rather than given a sentence that looks
+like a threshold — an unset gate you can see is safer than a vague one you
+cannot fail.
 
 ## Phase 0 — The Live Loop (approved, building now)
 
@@ -34,7 +44,13 @@ below leaks into it.
 - Report card share artifact ("Your home has 19 tasks — 7 most owners
   miss"), wizard as public landing. Already committed as the plan's phase 2.
 - The Almanac PDF booklet (design system R3) doubles as the share artifact.
+  Reconciled by Y10: it ships **screen-first** — a shareable rendered artifact,
+  not a print-optimized layout. Print and large-text layouts stay deferred
+  until after validation, per the plan's NOT-in-scope list.
 - Per-client subscribe QA across Apple/Google/Outlook.
+- **Reference link per task** (stage 1 of task content): every almanac task
+  carries a trusted source URL, shown wherever the task is. Links stay present
+  through every later content stage; they are never replaced.
 - Competitive note: Dib/Toolbox/HomeBeacon all built landing pages on
   Centriq's shutdown; the report card is our equivalent recruiting artifact,
   but positive-sum.
@@ -63,6 +79,17 @@ Schedule · Systems · Service log · Documents · Export.
 - **This month**: month view default + by-area toggle (board-approved),
   task detail pages, month strip with busy-month markers, one-off
   (non-recurring) maintenance events (spec §5).
+- **Task brief** (stage 2 of task content): each task detail page carries
+  difficulty, time estimate, tools needed, and warning signs — the symptoms
+  that mean do this now. Decision-support fields, not prose tutorials; the
+  reference link stays. HomeCalendr ships exactly these four fields publicly
+  on all 22 of its tasks, and they are why its task pages read as more useful
+  than a bare interval.
+- **Public task pages**: the task detail page and the browsable task index
+  (filterable by category and frequency) are public and crawlable — a second
+  front door beside the report card, on content the almanac already has.
+  HomeCalendr's `/tasks` and `/tasks/<slug>` are its only real acquisition
+  asset; ours costs nothing extra once task pages exist.
 - **Service log**: chronological ledger, me/pro attribution, notes on
   anything observed, per-asset history; completion writes are auditable,
   never just dismissed reminders (spec decision 6).
@@ -130,8 +157,10 @@ reduce questionnaire data entry.
 - Pro handoff: printable/sendable task spec for hiring out a job, plus the
   home's own preferred-provider records ("my plumber") — records, not a
   marketplace.
-- Trusted tutorial links per task (spec: link out, never a content
-  business).
+- **Step-by-step guides** (stage 3 of task content): in-product steps replace
+  the task brief where a task earns it. Reference links stay alongside,
+  always — we link out to sources even when we write the steps. Gate this per
+  task, not as a content program; "never a content business" still holds.
 
 ## Phase 6 — Beyond the binder (spec horizons, each separately gated)
 
@@ -193,5 +222,17 @@ Still open, parked at their phase gates:
   competitors farm it. Our answer is structural (export, print, sources).
 - Dead/dying: Kousso (dead), Oply (domain for sale — plan doc still lists
   it as a live incumbent; update on next plan revision).
+- **HomeCalendr** (direct, audited 2026-08-01): marketing-grade demo, not a
+  shipping product. No backend of any kind — the only network calls are Clerk
+  and Google Fonts. `/dashboard` and `/settings` render unauthenticated with
+  hardcoded data ("Pro Plan active, next billing February 10, 2026" belongs to
+  nobody); task and per-step completion persist nowhere; Clerk reports
+  `has_paid_plans: false` and no Stripe key behind the $8/$16 pricing page.
+  Live library is 22 tasks across 8 categories, not the "50+ tasks, 12
+  categories" the landing page claims. No home profile, no assets, no
+  documents, no service log, no calendar feed — email and push only. What they
+  do own: per-task execution content (difficulty, time, tools, warning signs,
+  steps) and public crawlable task pages, both answered above at phases 1/3/5.
+  Everything else on this roadmap is territory they have not entered.
 - Nobody owns: seasonal design, printable almanac artifact, inspection-PDF
   cold start done well, cozy.
