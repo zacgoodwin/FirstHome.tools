@@ -1397,13 +1397,23 @@ a symptom.
 
 ### DX findings (DX1-DX9)
 
-- **DX1 — `.gitattributes` will break the golden-file ICS test.** RFC 5545
-  mandates CRLF. The repo has `core.autocrlf=true` and a `.gitattributes` that
-  covers only `tools/git-hooks/*`, so a committed `.ics` fixture normalises to
-  LF in the repo and the byte comparison diverges between Windows and Linux.
-  P4 exists specifically to make that byte comparison possible, and E11 says its
-  job is catching UID churn. **SUPERSEDED BY DXT1** — the setting is
-  `*.ics text eol=crlf`, not `-text`.
+- **DX1 — nothing guarantees the golden-file ICS fixture's line endings.** RFC
+  5545 mandates CRLF. `.gitattributes` covers only `tools/git-hooks/*`, so
+  `git check-attr text eol` on any `.ics` path returns `unspecified` and the
+  bytes are at the mercy of whatever `core.autocrlf` the checking-out machine
+  happens to have. On the founder's machine that value is `true`, inherited from
+  the Git for Windows system config at `C:/Program Files/Git/etc/gitconfig`, not
+  set in the global or local config. **That is the point, not an incidental
+  detail: `core.autocrlf` is per-machine and never committed**, so the founder's
+  laptop, a CI runner and a Linux build container can each hold a different
+  value, and the byte comparison diverges between them. A local override to
+  `false` changes which machines break, not whether the guarantee exists. Only
+  `.gitattributes` travels with the repo, and this repo already learned that
+  once: `tools/git-hooks/* text eol=lf` exists for exactly this reason. P4 exists
+  specifically to make that byte comparison possible, and E11 says its job is
+  catching UID churn. **SUPERSEDED BY DXT1** — the attribute is
+  `*.ics text eol=crlf`, not `-text`, and it must be paired with an in-test
+  assertion because no git attribute can check what the serializer emits.
 - **DX2 — the scaffold ticket does not exist.** Eight P1 tasks name files inside
   packages that do not exist. Dependencies calls the scaffold "already
   anticipated in CLAUDE.md", but CLAUDE.md only records that SvelteKit is not
@@ -1587,9 +1597,9 @@ Sequencing: **T-C1 still runs first**; T-E0 is the first code task after it.
   - Verify: `npm test` runs one green fixture test; Vitest runs under the pre-commit hook alongside `node tools/gate.mjs`; `tools/gate.mjs` globs `services/*/README.md` into the INDEX check (DX9) and goes red until both READMEs are routed
   - **Runs after T-C1, before every other code task.**
 - [ ] **T-D1 (P1, human: ~15min / CC: ~5min)** — infra — pin ICS line endings and assert them
-  - Surfaced by: DX1, superseded by DXT1 — `core.autocrlf=true` with no `.ics` rule
+  - Surfaced by: DX1, superseded by DXT1 — no `.ics` attribute, so line endings depend on a per-machine `core.autocrlf` that is never committed
   - Files: `.gitattributes`, ICS golden-file test
-  - Verify: `*.ics text eol=crlf` present; the test asserts generated output uses CRLF and contains no bare LF; the golden test passes on Windows and in a Linux container
+  - Verify: `git check-attr text eol -- <fixture>.ics` reports `text: set, eol: crlf` (not `unspecified`); the test asserts generated output uses CRLF and contains no bare LF; the golden test passes on Windows and in a Linux container **without either one setting `core.autocrlf`**
 - [ ] **T-D2 (P1, human: ~2h / CC: ~20min)** — `contracts/answers.ts` — the answer vocabulary
   - Surfaced by: DX4 — E7's wizard-rules cross-check is unwritable without it
   - Files: `contracts/answers.ts` (new), `services/rules`, `services/web`
