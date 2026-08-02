@@ -1299,17 +1299,342 @@ a specific finding above. P1 blocks ship; P2 lands same branch; P3 is process.
   - Surfaced by: Y8 — `?tester=NN` attributes a link, not a person
   - Verify: each of the ten named and confirmed as a first-time owner
 
+## Developer Experience Specification
+
+Added by /plan-devex-review on 2026-08-01. Mode: **DX POLISH** (scope taken as
+correct; rigor on committed work only). Nine findings, all individually
+approved, plus four cross-model tensions from a Codex outside voice, all four
+resolved in Codex's favour.
+
+**Applicability.** FirstHome.tools is a consumer web app, so the DX skill's own
+gate would normally exit. The review ran against the two surfaces where the
+user genuinely is a developer, confirmed by the founder at the gate:
+
+1. `services/rules` as a versioned library consumed by a zero-context agent
+   session (the T-C3 seat).
+2. The ICS feed as an integration contract, from both the machine integrator's
+   seat (Apple/Google polling servers) and the operator's seat (the founder
+   debugging a stale feed weeks after launch).
+
+Everything below is D-numbered as DX1-DX9 with cross-model amendments
+DXT1-DXT4. Where a DX-item and a DXT amendment disagree, **the amendment wins**.
+
+### Developer persona cards
+
+```
+PERSONA A — services/rules
+Who:       A fresh Claude Code session on ticket T-C3, zero prior context
+Context:   Reads CLAUDE.md, the ticket body, then hunts the contract
+Tolerance: Whatever it cannot infer from the contract, it guesses wrong silently
+Expects:   A runnable package, a typed contract, a fixture to copy
+
+PERSONA B — the ICS feed
+Who:       (i) Apple/Google polling servers  (ii) the founder as operator
+Context:   (i) polls on its own schedule, reads no docs, files no bugs
+           (ii) week six, a user says "my calendar stopped updating"
+Tolerance: (i) zero — a malformed property produces wrong output forever
+           (ii) if the answer is not reachable in ten minutes it is not reached
+Expects:   (i) a conformant response  (ii) a readable history of what happened
+```
+
+### Developer empathy narrative (confirmed accurate by the founder)
+
+Traced against the repo as it stands, not hypothetically. This doubles as the
+first-time confusion report; timestamps are elapsed session time.
+
+- **T+0:00** CLAUDE.md loads. Stack is TS 5 / Node 22 / npm, SvelteKit "not yet
+  scaffolded". Gate is `node tools/gate.mjs`, with a parenthetical that Vitest
+  joins once services exist. Ticket: build the version-keyed registry.
+- **T+0:02** `services/` holds one file, README.md. No `services/rules`, no
+  `package.json` anywhere in the repo, no tsconfig, no Vitest. The ticket names
+  `services/rules/src/index.ts` as if it were a file being edited. It is not;
+  the entire package is being invented, and nothing says whether `services/` is
+  an npm workspace, standalone packages, or relative-path folders.
+- **T+0:06** `services/README.md` gives the folder shape but not the wiring, so
+  the session decides and hopes the next one decides identically.
+- **T+0:10** The rule schema lives in E7, which opens with SUPERSEDED BY C2, C7,
+  X2. Four sections get reassembled. C2's `anchor` was never merged back into
+  E7's field list, so whether it is a field is a guess. **(DX6)**
+- **T+0:16** E7's cross-check gate test needs the answer vocabulary. It exists
+  in no file. A weaker test gets written instead. **(DX4)**
+- **T+0:22** X2 says an unresolvable version never throws, which describes the
+  caller, not the return shape. The session picks `null`. **(DX6)**
+- **T+0:28** Is `version` per-rule (E7) or per-dataset (C7/X2)? Coin flip on a
+  column C7 pins forever. **(DX5)**
+
+Measured baseline: **~28 minutes to the first line of real code**, and that
+assumes all four guesses land correctly.
+
+### Competitive DX benchmark
+
+| Package | Contract clarity | First-green path | TTHW |
+|---|---|---|---|
+| `@mdn/browser-compat-data` | JSON schema in-repo | clone, `npm ci`, `npm test` | <5 min |
+| `caniuse-lite` | generated, schema fixed | consumed, not authored | n/a |
+| `services/rules` (before) | spread across E7/C2/C7/X2 | package does not exist | ~28 min |
+| `services/rules` (target) | one contract file + fixture | `npm test` | **<5 min** |
+
+Target tier chosen: **Competitive (2-5 min)**. Champion tier would need the full
+scaffold plus a published README, which is not what a stranger completing the
+loop depends on (premise 4).
+
+External facts confirmed by search, relevant to Persona B and to D9's calendar
+lag copy: **Google Calendar polls subscribed feeds every 12-24h with no forced
+refresh; Apple polls ~hourly by default, user-configurable, and defers on
+battery.** D9's "up to a day" is accurate. It also means "their calendar has not
+updated" is the expected state for most of any given day, which is why the
+operator needs fetch history rather than intuition.
+
+### Magical moment specification
+
+For Persona B the magical moment is not launch, it is week six: turning "my
+calendar stopped updating" into an answer in minutes. Delivery vehicle chosen:
+**a written diagnostic query in the T-E7 runbook** (not a new tool). Per home:
+last fetch, fetch count, user-agent, `subscribed_at`, and recent generation
+failures. It reads data the plan already commits to collecting, so it adds no
+scope, and it makes the Google 12-24h throttle legible as a pattern instead of
+a symptom.
+
+### DX findings (DX1-DX9)
+
+- **DX1 — `.gitattributes` will break the golden-file ICS test.** RFC 5545
+  mandates CRLF. The repo has `core.autocrlf=true` and a `.gitattributes` that
+  covers only `tools/git-hooks/*`, so a committed `.ics` fixture normalises to
+  LF in the repo and the byte comparison diverges between Windows and Linux.
+  P4 exists specifically to make that byte comparison possible, and E11 says its
+  job is catching UID churn. **SUPERSEDED BY DXT1** — the setting is
+  `*.ics text eol=crlf`, not `-text`.
+- **DX2 — the scaffold ticket does not exist.** Eight P1 tasks name files inside
+  packages that do not exist. Dependencies calls the scaffold "already
+  anticipated in CLAUDE.md", but CLAUDE.md only records that SvelteKit is not
+  scaffolded; it holds no ticket. Whichever session lands first silently
+  inherits the workspace layout, the import path between services, and whether
+  Vitest ever reaches the pre-commit gate. Fix: **T-E0**. *Sequencing corrected
+  by the outside voice: T-E0 is the first **code** task, after T-C1. The
+  notification spike still runs first (line 1219); T-C2 sourcing runs
+  concurrently.*
+- **DX3 — a safety correction cannot reach existing homes.** C7 pins tasks to a
+  dataset version forever with no auto-migration, which is right for a routine
+  revision and wrong for a correction. RULES-SOURCING.md already accepts that a
+  too-long interval is the harmful direction, so a safety interval shipped too
+  long persists in every existing home's calendar indefinitely. Y7 reconciles
+  when the user changes their answers; nothing reconciles when the founder
+  changes theirs. **SUPERSEDED BY DXT2** — the mechanism is an executable
+  command with a publish gate, not a written procedure.
+- **DX4 — the answer vocabulary has no home.** `services/rules` tests conditions
+  against wizard answers, so the field names and permitted values are a
+  cross-service contract. `services/README.md` mandates that contracts live in
+  `contracts/` or `schemas/` at the repo root; neither directory exists. E7's
+  wizard-rules cross-check cannot be written without a canonical list, so it
+  degrades to a tautology and stays green. The failure it exists to catch is a
+  rule whose condition names an answer the wizard never asks: that rule never
+  fires, and a safety rule that never fires is indistinguishable from a home
+  that does not need it. Fix: **`contracts/answers.ts`**, exporting a runtime
+  schema plus inferred types (a type-only vocabulary cannot validate datasets).
+- **DX5 — versioning is dataset-level, not per-rule.** E7 puts `version` on the
+  rule; C7 speaks of published dataset versions; X2 defines
+  `getRule(ruleId, version)` over an append-only list. These are two different
+  designs and the second argument means something different in each. Decision:
+  **the dataset is the versioned unit.** One number identifies the whole world a
+  task was born into, which is what a liability trail needs, and it keeps the
+  append-only list an ordered sequence. The per-rule case was argued properly and
+  rejected: applicability conditions, answer vocabulary and rule combinations
+  form one reproducible snapshot. Consequences: drop or rename the per-rule
+  `version`; **rename `tasks.rule_version` to `tasks.dataset_version`** (outside
+  voice — otherwise the contradiction survives under a misleading column name);
+  keep an immutable per-rule content hash for audit, never as a second lookup key.
+- **DX6 — two contract omissions.** C2 created the due-date anchor and E7's
+  field list never received it, so a schema assembled from E7 silently reverts
+  C2 and undermines Y3's widened window. And X2 describes what the caller renders
+  on an unresolvable version, never what `getRule` returns. Fix: `anchor` as a
+  discriminated union (`monthly` | `seasonal{months}` | `interval`) with exact
+  month validation, and `getRule` returns `null` on a miss, stated in the
+  contract.
+- **DX7 — `feed_generation_failed` has no readable surface.** The plan says
+  "increment a counter" three times and never says what the counter is. T-C4's
+  acceptance criterion is satisfiable by an in-memory number that reads zero
+  after the deploy being diagnosed, which is precisely P8a's named trigger.
+  **SUPERSEDED BY DXT3** — the answer is layered, not a single store.
+- **DX8 — the rules gate never says what a failing rule looks like.** The gate is
+  the only feedback the dataset gives, and zod's default output identifies rules
+  by array index. RULES-SOURCING.md budgets 7-10 irreducible human hours across
+  three sittings; a discouraging signal there means the gate gets run less often,
+  which is exactly when a bad `reviewed_date` or dead `source_url` slips into a
+  published version. Fix: one line per failing rule carrying rule id, field,
+  JSON-stringified offending value, the dataset file path, and the fix, matching
+  `tools/gate.mjs`'s existing `GATE RED:` convention.
+- **DX9 — the routing gate cannot see per-service READMEs.** `tools/gate.mjs`
+  check 2 scans `rules/`, `architecture/` and `docs/ai/` plus five hardcoded
+  paths, and never descends into `services/`. The two documents describing the
+  contracts an agent most needs are the two the router cannot see. Fix: glob
+  `services/*/README.md` into the knowledge collection. (The outside voice
+  preferred a hierarchical alternative, where INDEX.md routes to
+  `services/README.md` and that file enumerates each service README; rejected as
+  more indirection than two services justify.)
+
+### Cross-model amendments (DXT1-DXT4)
+
+An independent Codex pass challenged all nine decisions. Four material
+disagreements; all four resolved in Codex's favour.
+
+- **DXT1 — the git setting is `text eol=crlf` (supersedes DX1).** `-text`
+  preserves whatever bytes were first committed, so a fixture regenerated on
+  Linux with bare LF is preserved just as faithfully as a correct one.
+  `*.ics text eol=crlf` guarantees CRLF in the working tree on every platform.
+  Separately, **no git attribute can check the runtime serializer**, so the ICS
+  test asserts that generated output uses CRLF and contains no bare LF. RFC 5545
+  requires it, and a golden comparison against an equally-wrong fixture passes.
+- **DXT2 — safety correction is executable, with a publish gate (supersedes
+  DX3).** A documented-but-unenforced procedure is worse than none because the
+  marker makes it look handled: the dataset ships, the runbook exists, the box
+  feels ticked, and every existing home is untouched with nothing in the system
+  aware of it. Required shape: a correction command with **dry-run**, an
+  affected-task count, explicit approval, a transaction, and audit rows that
+  **never overwrite the original pin** (recording old dataset, replacement
+  dataset, old due date, new due date, operator, reason, timestamp); and
+  **publishing a dataset carrying a safety marker is blocked** until the command
+  has completed or explicitly recorded zero affected tasks.
+- **DXT3 — failure observability is layered (supersedes DX7).** Postgres cannot
+  record the Postgres-unreachable failure, which is the 503 path in P2 and the
+  worst outage in the system. Rows supplement logs; they do not replace them.
+  Assignment, stated in the runbook: **structured log on every path** including
+  database-down; **rows** for the two database-available paths, carrying outcome,
+  cached-body availability, deploy id, error class, and a **retention policy**
+  (P6a already warns that `feed_fetches` grows unattended; a failures table has
+  the same problem); **external probe** for host-level failure.
+- **DXT4 — two ICS contract gaps this review missed.** (i) The feed route's
+  media type is specified nowhere. E12 pins ETag, 304 and Cache-Control and P2
+  pins status codes, but nothing says
+  `Content-Type: text/calendar; charset=utf-8`. Some clients refuse a feed served
+  as `text/plain`, and a wrong charset renders any accented character as mojibake
+  in a calendar that can never be re-addressed after P7. (ii) Nothing defines
+  what happens to events already delivered when a task becomes `not_applicable`
+  (C5/Y5) or `unresolved` (Y6). Discrete regenerated events means the occurrences
+  simply stop appearing; most clients drop events absent from a refreshed feed,
+  but it is undefined and untested. Both are added to the T-C1 spike and the
+  manual client matrix.
+
+### DX scorecard
+
+```
++====================================================================+
+|              DX PLAN REVIEW — SCORECARD                            |
++====================================================================+
+| Dimension            | Before | After  | Note                      |
+|----------------------|--------|--------|---------------------------|
+| Getting Started      |  3/10  |  8/10  | T-E0 closes the scaffold  |
+| API / Contract       |  4/10  |  9/10  | DX4/DX5/DX6               |
+| Error Messages       |  6/10  |  9/10  | DX8 + DXT3                |
+| Documentation        |  5/10  |  8/10  | contract file + DX9       |
+| Upgrade Path         |  7/10  |  9/10  | DXT2 publish gate         |
+| Dev Environment      |  4/10  |  8/10  | T-E0 + DXT1               |
+| Community            |  6/10  |  6/10  | n/a for v1, no findings   |
+| DX Measurement       |  6/10  |  7/10  | DXT3 layering             |
++--------------------------------------------------------------------+
+| TTHW (services/rules)| ~28min | <5 min | target, not yet measured  |
+| Competitive Rank     | Competitive (2-5 min tier)                   |
+| Magical Moment       | designed — runbook diagnostic query          |
+| Product Type         | internal Library/SDK + integration contract  |
+| Mode                 | POLISH                                       |
+| Overall DX           |  5/10  |  8/10                               |
++====================================================================+
+| DX PRINCIPLE COVERAGE                                              |
+| Zero Friction                | covered (T-E0)                      |
+| Learn by Doing               | covered (fixture rule + contract)   |
+| Fight Uncertainty            | covered (DX8, DXT3)                 |
+| Opinionated + Escape Hatches | covered (DX5 decided, DXT2 manual)  |
+| Code in Context              | covered (worked example rule)       |
+| Magical Moments              | covered (runbook query)             |
++====================================================================+
+```
+
+### What already exists (reuse, do not rebuild)
+
+- `tools/gate.mjs` — 122 lines, four checks, deterministic, <2s, already wired
+  to a pre-commit hook. DX8's failure format and DX9's glob extend it; nothing
+  new is needed.
+- `docs/ai/INDEX.md` — a gate-enforced knowledge router. Genuinely good design;
+  DX9 only widens what it can see.
+- `docs/ai/RULES-SOURCING.md` — the human truth-check half of C7. Complete as
+  written; DX8 improves the machine half's feedback, not this.
+- `services/README.md` — already mandates root-level `contracts/`. DX4 follows
+  an existing rule rather than inventing one.
+- `.gitattributes` — exists, currently one rule. DXT1 adds a second line.
+
+### NOT in scope (DX work considered and deferred)
+
+- A `feed:doctor` CLI. Considered for the magical moment; the runbook query
+  covers it without new scope (POLISH mode).
+- Automatic migration of all tasks on any rule change. Rejected on record by C7
+  and re-rejected here; DXT2's correction path is narrow and gated by design.
+- DX instrumentation of the agent loop itself (measuring whether sessions get
+  faster). Real, but it is expansion and serves no stranger completing the loop.
+- A published external contract for `services/rules`. Roadmap phase 5; premise 4
+  defers it.
+- Windows/Linux dev-loop divergence beyond DXT1 (Docker Desktop bind-mount
+  performance, hot reload across WSL). Noted, no evidence it bites yet.
+- Community, contribution and pricing surfaces (Pass 7). Solo, private repo;
+  nothing to review and nothing worth building at v1.
+
+### DX implementation tasks
+
+Synthesized from the findings above. Each derives from a specific DX-item.
+Sequencing: **T-C1 still runs first**; T-E0 is the first code task after it.
+
+- [ ] **T-E0 (P1, human: ~half day / CC: ~45min)** — infra — scaffold the workspace
+  - Surfaced by: DX2 — eight P1 tasks name files in packages that do not exist
+  - Files: `package.json`, `tsconfig.json`, `vitest.config.ts`, `services/rules/`, `services/web/`, `tools/gate.mjs`, `docs/ai/INDEX.md`
+  - Verify: `npm test` runs one green fixture test; Vitest runs under the pre-commit hook alongside `node tools/gate.mjs`; `tools/gate.mjs` globs `services/*/README.md` into the INDEX check (DX9) and goes red until both READMEs are routed
+  - **Runs after T-C1, before every other code task.**
+- [ ] **T-D1 (P1, human: ~15min / CC: ~5min)** — infra — pin ICS line endings and assert them
+  - Surfaced by: DX1, superseded by DXT1 — `core.autocrlf=true` with no `.ics` rule
+  - Files: `.gitattributes`, ICS golden-file test
+  - Verify: `*.ics text eol=crlf` present; the test asserts generated output uses CRLF and contains no bare LF; the golden test passes on Windows and in a Linux container
+- [ ] **T-D2 (P1, human: ~2h / CC: ~20min)** — `contracts/answers.ts` — the answer vocabulary
+  - Surfaced by: DX4 — E7's wizard-rules cross-check is unwritable without it
+  - Files: `contracts/answers.ts` (new), `services/rules`, `services/web`
+  - Verify: exports a runtime schema plus inferred types; the cross-check test asserts both directions (every rule condition names a producible field; every wizard question feeds ≥1 rule)
+- [ ] **T-D3 (P1, human: ~1h / CC: ~10min)** — schema + contract — dataset-level versioning
+  - Surfaced by: DX5 — E7, C7 and X2 describe two different designs on a column C7 pins forever
+  - Files: migration, `services/rules/src/index.ts`, plan sections E6/E7/C7/X2
+  - Verify: `getRule(ruleId, datasetVersion)` resolves every fixture; `tasks.rule_version` renamed `tasks.dataset_version`; per-rule `version` removed or renamed; an immutable per-rule content hash exists for audit and is never used as a lookup key
+- [ ] **T-D4 (P1, human: ~1h / CC: ~10min)** — `services/rules` — anchor field and miss path
+  - Surfaced by: DX6 — C2's anchor never reached E7's field list; X2 never defined the return shape
+  - Files: rule zod schema, `services/rules/src/index.ts`
+  - Verify: `anchor` is a discriminated union with exact month validation; `getRule` returns `null` on an unresolvable version and the caller renders the stored title with a note, never throwing
+- [ ] **T-D5 (P2, human: ~30min / CC: ~10min)** — `services/rules` — readable gate failures
+  - Surfaced by: DX8 — zod defaults identify rules by array index across a 7-10 hour authoring loop
+  - Files: rules gate test
+  - Verify: a deliberately broken rule prints one line with rule id, field, JSON-stringified value, dataset file path, and the fix, in `tools/gate.mjs`'s `GATE RED:` style
+- [ ] **T-D6 (P2, human: ~2h / CC: ~20min)** — feed route — layered failure observability
+  - Surfaced by: DX7, superseded by DXT3 — Postgres cannot record the Postgres-unreachable failure
+  - Files: feed route, migration, T-E7 runbook
+  - Verify: structured log on all three P2 paths including database-down; rows on the two database-available paths carrying outcome, cached-body availability, deploy id and error class; a retention policy for that table and for `feed_fetches`; the runbook states which observer covers which path
+- [ ] **T-D7 (P2, human: ~1h / CC: ~10min)** — feed route + client matrix — ICS response contract
+  - Surfaced by: DXT4 — media type unspecified; event-removal behaviour undefined
+  - Files: feed route, feed route test, T-C1 spike notes, manual client matrix
+  - Verify: response asserts `Content-Type: text/calendar; charset=utf-8`; the client matrix confirms that marking a task not-applicable removes its events from a subscribed Apple and Google calendar, and that an `unresolved` task never appears
+- [ ] **T-D8 (P2, human: ~5h / CC: ~40min)** — `services/rules` + ops — safety-correction path
+  - Surfaced by: DX3, superseded by DXT2 — a documented-but-unenforced procedure is false assurance
+  - Files: rule schema (`supersedes_for_safety`), correction command, migration (audit rows), publish gate, runbook
+  - Verify: dry-run reports the affected-task count without writing; applying requires explicit approval, runs in a transaction, and writes audit rows preserving the original pin (old dataset, replacement dataset, old due date, new due date, operator, reason, timestamp); publishing a dataset carrying a safety marker is blocked until the command has completed or recorded zero affected tasks
+  - **Must land before the launch post publishes.**
+- [ ] **T-D9 (P1, human: ~30min / CC: ~10min)** — runbook — the feed diagnostic query
+  - Surfaced by: the magical moment specification — every ingredient is committed, no way to ask the question
+  - Files: T-E7 runbook
+  - Verify: one checked-in query returning, per home, last fetch, fetch count, user-agent, `subscribed_at`, and recent generation failures; the runbook notes that Google's 12-24h poll makes "not updated today" the normal state
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | CLEAR (SELECTIVE_EXPANSION) | 5 proposals, 4 accepted, 1 cut; 4 own findings (X1-X4); 0 unresolved |
-| Codex Review | `/codex review` | Independent 2nd opinion | 3 | ABSORBED | r1: 11 → C1-C9; r2: 10 → Y1-Y10; r3 (post-pivot): 8 → 1 already fixed, 7 accepted |
+| Codex Review | `/codex review` | Independent 2nd opinion | 4 | ABSORBED | r1: 11 → C1-C9; r2: 10 → Y1-Y10; r3 (post-pivot): 8 → 1 already fixed, 7 accepted; r4 (DX): 4 material → DXT1-DXT4, all 4 accepted |
 | Eng Review | `/plan-eng-review` | Architecture & tests (required) | 2 | CLEAR (PLAN) | r1: 21 issues; r2: 7 issues + hosting pivot (P1-P9), 0 unresolved, 0 critical gaps |
 | Design Review | `/plan-design-review` | UI/UX gaps | 1 | CLEAR (FULL) | score: 4/10 → 9/10, 18 decisions; D10 amended by P9 |
-| DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | — |
+| DX Review | `/plan-devex-review` | Developer experience gaps | 1 | CLEAR (POLISH) | score: 5/10 → 8/10, TTHW ~28min → <5min; 9 findings (DX1-DX9) + 4 cross-model (DXT1-DXT4); 0 unresolved |
 
-**CODEX:** three rounds. R1 found five holes the first eng review missed
+**CODEX:** four rounds. R1 found five holes the first eng review missed
 (token-URL generation, due-date anchoring, subscribed definition, action-token
 scope, snooze/UID churn) → C1-C9; its scope-cut proposal was rejected on record
 (C8). R2 found ten more, sharpest being that a subscribed calendar may never
@@ -1319,18 +1644,37 @@ setup-plus-one-month anchor (Y3) → Y1-Y10, all accepted. R3, run against the
 pivoted plan, found eight: one already fixed, and seven accepted covering the
 TEST-PLAN/P2 contradiction, the missing `homes.subscribed_at` column, P2's
 undefined cold cache, missing Compose volumes, unmonitored uptime, undefined
-deploy rollback, and the premise-5 contradiction (P9).
+deploy rollback, and the premise-5 contradiction (P9). R4, run against the DX
+review's nine decisions rather than the plan, produced four material
+disagreements, all accepted: the git attribute was wrong (`text eol=crlf`, not
+`-text`), a manual safety-correction procedure is false assurance without a
+publish gate, Postgres rows cannot record a Postgres-unreachable failure, and
+the ICS response contract (media type, charset, event-removal semantics) was
+missed entirely. It also corrected the DX review's own sequencing error: T-E0
+comes after T-C1, not first.
 
-**CROSS-MODEL:** four independent passes (eng r1 12, Codex r1 11, Codex r2 10,
-CEO 9) plus this review's 7 and Codex r3's 8. Overlap remained near zero
-throughout — each pass saw what the others structurally could not. Two
-convergences are worth recording. First, the CEO round's X1 (silent feed
-failure) and Codex r2's Y1 (silent notification failure) are the same disease
-in different layers, found independently: the delivery half of this product is
-where the risk lives. Second, Codex r3 caught two defects *this review
-introduced an hour earlier* — the TEST-PLAN/P2 contradiction and P2's cold
-cache. A reviewer cannot reliably audit its own fresh output; the outside voice
-earned its slot on this run specifically.
+**CROSS-MODEL:** five independent passes (eng r1 12, Codex r1 11, Codex r2 10,
+CEO 9, DX 9) plus the eng r2's 7, Codex r3's 8, and Codex r4's 4. Overlap
+remained near zero throughout — each pass saw what the others structurally could
+not. Three convergences are worth recording. First, the CEO round's X1 (silent
+feed failure) and Codex r2's Y1 (silent notification failure) are the same
+disease in different layers, found independently: the delivery half of this
+product is where the risk lives. Second, Codex r3 caught two defects *the eng
+review introduced an hour earlier* — the TEST-PLAN/P2 contradiction and P2's
+cold cache. Third, Codex r4 did the same to the DX review, correcting a git
+attribute and a task ordering within minutes of them being written. A reviewer
+cannot reliably audit its own fresh output; the outside voice has now earned its
+slot twice on that specific failure.
+
+**DX:** the review's sharpest structural finding is that the plan's Implementation
+Tasks name files inside packages no ticket creates (DX2), and its sharpest
+concrete one is that `core.autocrlf=true` with no `.ics` attribute would send the
+golden-file ICS test red for line endings alone (DX1/DXT1) — the test P4 exists
+to make possible, guarding the UID churn C6 exists to prevent. Both surfaces the
+review was scoped to are now specified: the `services/rules` contract has a home,
+a versioning model, an anchor field and a defined miss path, and the feed has a
+media type, a defined removal path, and an observability story that names which
+observer covers which failure.
 
 **PIVOT:** hosting changed mid-review from Vercel + Supabase + KV to
 self-hosted Docker Compose (SvelteKit `adapter-node` + Postgres 17 + Caddy),
@@ -1339,13 +1683,15 @@ they were serverless artifacts — and replaced them with a smaller, more
 concrete ops surface (P1-P9). Postgres was re-chosen on merit over SQLite:
 backup story and roadmap phases 3-6, not performance.
 
-**VERDICT:** CEO + ENG + DESIGN CLEARED — ready to implement, with two
-sequencing constraints. **T-C1, the notification spike, still runs before the
-scaffold ticket**: if subscribed all-day events do not notify on Apple and
-Google, the loop as designed cannot close. **T-E1's Compose stack must land
-with named volumes and the survives-recreate check**, because every other
-assertion in it passes on a stack that loses all data on restart. Rules dataset
-sourcing (owner @Zac, method in `docs/ai/RULES-SOURCING.md`) remains the
-critical path beside both.
+**VERDICT:** CEO + ENG + DESIGN + DX CLEARED — ready to implement, with three
+sequencing constraints. **T-C1, the notification spike, still runs first**: if
+subscribed all-day events do not notify on Apple and Google, the loop as designed
+cannot close. **T-E0, the scaffold, is the first code task after it** — eight P1
+tasks name files inside packages that otherwise no ticket creates. **T-E1's
+Compose stack must land with named volumes and the survives-recreate check**,
+because every other assertion in it passes on a stack that loses all data on
+restart. Rules dataset sourcing (owner @Zac, method in
+`docs/ai/RULES-SOURCING.md`) remains the critical path beside all three, and can
+run concurrently with the scaffold.
 
 NO UNRESOLVED DECISIONS
