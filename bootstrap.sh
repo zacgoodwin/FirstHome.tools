@@ -38,15 +38,75 @@ if [ "$has_gh" = 1 ]; then
   fi
 fi
 
+<<<<<<< HEAD
 install_pack() { # name url
+=======
+# gh-stack extension: GitHub native stacked PRs, used by stax submits.
+if [ "$has_gh" = 1 ]; then
+  if gh extension list 2>/dev/null | grep -q gh-stack; then
+    results+=("OK       gh-stack extension")
+  elif gh extension install github/gh-stack >/dev/null 2>&1; then
+    results+=("OK       gh-stack extension (installed)")
+  else
+    results+=("MISSING  gh-stack extension -> run: gh extension install github/gh-stack")
+    missing=$((missing + 1))
+  fi
+fi
+
+# roborev: background AI review of every commit. Official installer is
+# pipe-to-shell from roborev.io; inspect/pin the script if that exposure
+# matters on this host.
+if ! command -v roborev >/dev/null 2>&1; then
+  curl -fsSL https://roborev.io/install.sh | bash >/dev/null 2>&1
+  export PATH="$PATH:$HOME/.roborev/bin"
+fi
+if command -v roborev >/dev/null 2>&1; then
+  results+=("OK       roborev")
+  # --git-path resolves through linked worktrees, same as check-pipeline.sh.
+  hook="$(git rev-parse --git-path hooks)/post-commit"
+  if [ -f "$hook" ] && grep -q roborev "$hook"; then
+    results+=("OK       roborev hook")
+  elif roborev init >/dev/null 2>&1 && grep -q roborev "$hook" 2>/dev/null; then
+    results+=("OK       roborev hook (installed)")
+  else
+    results+=("MISSING  roborev hook -> run: roborev init"); missing=$((missing + 1))
+  fi
+  if [ ! -f .roborev.toml ]; then
+    printf 'agent = "claude-code"\nreview_model = "haiku"\n' > .roborev.toml
+    results+=("OK       .roborev.toml (created)")
+  fi
+else
+  results+=("MISSING  roborev -> curl -fsSL https://roborev.io/install.sh | bash")
+  missing=$((missing + 1))
+fi
+
+install_pack() { # name source setup_kind(bash|bun)
+  # source is either a git URL (whole repo = the skill, cloned to $dest), or
+  # skills:<owner/repo>:<skill-name> for a multi-skill repo installed via the
+  # skills CLI (npx skills add), which resolves <skill-name> to $dest itself.
+>>>>>>> 65069d3 (bootstrap: install stack-ship and z-adversarial-review via npx skills add)
   dest="$HOME/.claude/skills/$1"
   if [ ! -d "$dest" ]; then
-    if [ "$has_git" != 1 ]; then
-      results+=("SKIPPED  $1 (git missing)"); missing=$((missing + 1)); return
-    fi
-    if ! git clone "$2" "$dest" >/dev/null 2>&1; then
-      results+=("MISSING  $1 -> clone failed: $2"); missing=$((missing + 1)); return
-    fi
+    case "$2" in
+      skills:*)
+        if ! command -v npx >/dev/null 2>&1; then
+          results+=("SKIPPED  $1 (npx missing)"); missing=$((missing + 1)); return
+        fi
+        repo="${2#skills:}"; repo="${repo%:*}"
+        skill="${2##*:}"
+        if ! npx --yes skills add "$repo" --skill "$skill" -g -a claude-code -y --copy >/dev/null 2>&1; then
+          results+=("MISSING  $1 -> npx skills add $repo --skill $skill failed"); missing=$((missing + 1)); return
+        fi
+        ;;
+      *)
+        if [ "$has_git" != 1 ]; then
+          results+=("SKIPPED  $1 (git missing)"); missing=$((missing + 1)); return
+        fi
+        if ! git clone "$2" "$dest" >/dev/null 2>&1; then
+          results+=("MISSING  $1 -> clone failed: $2"); missing=$((missing + 1)); return
+        fi
+        ;;
+    esac
   fi
   # Run the pack's own idempotent setup every time: heals a clone whose setup
   # failed on a previous run instead of reporting a half-install as OK.
@@ -58,8 +118,14 @@ install_pack() { # name url
   fi
 }
 
+<<<<<<< HEAD
 install_pack gstack https://github.com/garrytan/gstack.git
 install_pack zstack https://github.com/zacgoodwin/zstack.git
+=======
+install_pack gstack https://github.com/garrytan/gstack.git bash
+install_pack z-adversarial-review skills:zacgoodwin/zg-skills:z-adversarial-review bun
+install_pack stack-ship skills:zacgoodwin/zg-skills:stack-ship bash
+>>>>>>> 65069d3 (bootstrap: install stack-ship and z-adversarial-review via npx skills add)
 
 results+=("OK       plugins (ponytail, caveman, context-optimizer) install automatically when you trust this repo in Claude Code")
 

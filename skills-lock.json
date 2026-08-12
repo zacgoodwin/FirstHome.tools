@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "dev-as-ai": {
+      "source": "zacgoodwin/zg-skills",
+      "sourceType": "github",
+      "skillPath": "skills/dev-as-ai/SKILL.md",
+      "computedHash": "15428a53803a99974f096efb4c019a9499aa3011bc106fc11ddd8a819976aedd"
+    },
+    "dev-as-human": {
+      "source": "zacgoodwin/zg-skills",
+      "sourceType": "github",
+      "skillPath": "skills/dev-as-human/SKILL.md",
+      "computedHash": "a756c88493730a296ba4849962e72f3a117c0e12fc882db812d76207c1e5a82c"
+    },
+    "stack-ship": {
+      "source": "zacgoodwin/zg-skills",
+      "sourceType": "github",
+      "skillPath": "skills/stack-ship/SKILL.md",
+      "computedHash": "e903cfabbb8b834ca5929b7e4aeffc51061986c787c119982c52a5c01bd40043"
+    },
+    "z-adversarial-review": {
+      "source": "zacgoodwin/zg-skills",
+      "sourceType": "github",
+      "skillPath": "skills/z-adversarial-review/SKILL.md",
+      "computedHash": "388b854066a18a39d75056bda1d6dd36049f2601a84f5320ac945993bc5fb0ae"
+    }
+  }
+}
