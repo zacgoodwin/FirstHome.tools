@@ -215,30 +215,36 @@ agents: [engineer, designer, executive, legal, uxr, skeptic, customer]
 
 ## Action Items
 
+**Resolved 2026-08-12** via `/grill-with-docs` (domain-modeling grilling
+session) — see the PRD's "Grilling session amendments (G1-G8)" section,
+`CONTEXT.md`, and `docs/adr/0001-self-hosted-infrastructure.md` /
+`0002-hard-delete-on-request.md`. Checked items below are decided; the
+underlying implementation is not yet done.
+
 **This week, before any further planning:**
 - [ ] Run T-C1, widened: Android device, subscribe-step completion on iPhone Safari / Android Chrome / Google Calendar mobile, and T-D7's event-removal semantics — @Zac
 - [ ] Post The Assignment's question with no link and no product, to the three target subs (~1h) — @Zac
-- [ ] Confirm sole proprietor vs LLC (5 min) — @Zac
+- [x] Confirm sole proprietor vs LLC (5 min) — @Zac — **LLC** (G1)
 
 **Before the first build ticket:**
-- [ ] Ticket the core product build and publish one combined hour total; revise the "Effort S / ~2 weeks" line — @Zac
-- [ ] Write the one-line reason for self-hosting, and decide T-E7's scope — @Zac
-- [ ] Add a deletion path to the data model and the ten-surface inventory — @Zac
+- [ ] Ticket the core product build and publish one combined hour total; revise the "Effort S / ~2 weeks" line — @Zac — separate planning pass (G8)
+- [x] Write the one-line reason for self-hosting, and decide T-E7's scope — @Zac — self-hosting/OSS contribution; T-E7 trimmed to external probe pre-bar (G2)
+- [x] Add a deletion path to the data model and the ten-surface inventory — @Zac — hard delete on request, 90-day log retention (G3); ten-surface inventory wiring still open
 - [ ] Write the `seq` formula and the wizard-session token mechanism into the contract — @Zac
 - [ ] Add state rows for surfaces 3, 4, 5, 10; add surface 3's focus rule and surface 5's submit-failure path — @Zac
 - [ ] Fix the storyboard's "no signup, free, 3 minutes" copy against DESIGN.md — @Zac
 
 **Before the launch post:**
 - [ ] Privacy + terms page, linked from surfaces 1 and 6 — @Zac
-- [ ] Safety disclaimer on the trust line and safety-category task pages — @Zac
-- [ ] Retention purge for `feed_fetches`, request logs and backups (fold into T-E6/T-E7) — @Zac
+- [ ] Safety disclaimer on the trust line and safety-category task pages — @Zac — placement decided: inline third sentence (G6); copy itself still open
+- [ ] Retention purge for `feed_fetches`, request logs and backups (fold into T-E6/T-E7) — @Zac — window decided: 90 days (G3); job still unbuilt
 - [ ] Churn query ("polling ceased") in T-D9's runbook — @Zac
 - [ ] Post-subscribe confirmation affordance; plain-words lag sentence; share-warning before the calendar is shared — @Zac
 
 **Decisions needed:**
-- [ ] Self-hosting justification + T-E7 scope (Conflict 1) — PM
-- [ ] Take the concierge idea as a research instrument or not (Conflict 2) — PM
-- [ ] Trust line layout with the disclaimer added (Conflict 4) — PM
+- [x] Self-hosting justification + T-E7 scope (Conflict 1) — PM — resolved, G2
+- [x] Take the concierge idea as a research instrument or not (Conflict 2) — PM — not adopted, R2 covers it (G5/G7)
+- [x] Trust line layout with the disclaimer added (Conflict 4) — PM — inline third sentence (G6)
 
 ---
 

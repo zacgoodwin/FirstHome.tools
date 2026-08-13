@@ -288,10 +288,13 @@ deadline pressure.
 Three states carry specific decisions:
 
 - **D5. Low-surprise result.** When the surprise count is 2 or fewer (D15), the
-  headline switches from "N you probably did not know about" to what the
-  building or landlord handles instead. Never renders "0 you probably did not
-  know about". Condos and townhouses are a large slice of first-time buyers,
-  not an edge case.
+  headline switches from "N commonly missed tasks" to what the building or
+  landlord handles instead. Never renders "0 commonly missed tasks". Condos
+  and townhouses are a large slice of first-time buyers, not an edge case.
+  **Copy corrected by G4** — the original wording, "N you probably did not
+  know about", contradicted DESIGN.md's own decision log (2026-07-31, board
+  round 1), which rejected that exact framing because the product cannot
+  verify what any individual user already knew.
 - **D6. Double mark-done.** The completion token is deliberately shared, so two
   people on the same household calendar can tap the same event. The second
   arrival sees an already-done state: who logged it (rough label, the product is
@@ -1633,6 +1636,65 @@ Sequencing: **T-C1 still runs first**; T-E0 is the first code task after it.
   - Surfaced by: the magical moment specification — every ingredient is committed, no way to ask the question
   - Files: T-E7 runbook
   - Verify: one checked-in query returning, per home, last fetch, fetch count, user-agent, `subscribed_at`, and recent generation failures; the runbook notes that Google's 12-24h poll makes "not updated today" the normal state
+
+## Grilling session amendments (G1-G8)
+
+Added 2026-08-12 via `/grill-with-docs` (a domain-modeling grilling session),
+resolving the open "Decisions needed" and legal/business blockers from the
+2026-08-01 PRD review
+(`docs/ai/plans/zacgo-main-design-20260727-085637-review-synthesis.md`). The
+project's canonical glossary now lives in `CONTEXT.md` at the repo root
+(Plan/Almanac/Schedule/Calendar, Occurrence/Event, Surprise/Commonly
+missed/Discovery, Home/Household, Anonymous); this section records the
+non-glossary decisions. Two are hard-to-reverse enough to also carry an ADR
+in `docs/adr/`.
+
+- **G1 — Business entity (amends Legal blocker 2/3).** LLC, not sole
+  proprietorship. Safety-category guidance (smoke/CO alarms, water heater)
+  is the exact liability surface a personal-asset claim would attach to.
+- **G2 — Self-hosting rationale + T-E7 scope (amends Conflict 1, P1,
+  T-E7).** The reason is now stated rather than implicit: the founder wants
+  to contribute to the self-hosting/OSS community, not a cost or control
+  argument. See `docs/adr/0001-self-hosted-infrastructure.md`. T-E7 ships
+  trimmed to the external feed-availability probe before the premise-2
+  validation bar is met; the rest of the P6a checklist (disk/cert/DNS
+  alarms, reboot-recovery test) ships after the bar is read.
+- **G3 — Home deletion model (amends Legal blocker 2, T-D6).** Hard delete
+  on request — rows removed across `homes`/`tasks`/`completions`/
+  `analytics_events`/`feed_fetches` by `home_id` — not soft-delete or
+  anonymize-in-place. Retention on raw activity (`feed_fetches`, request
+  logs): 90 days. Completions are the product's own service-history asset
+  and are kept indefinitely while the home exists. See
+  `docs/adr/0002-hard-delete-on-request.md`. Deliberate asymmetry with Y7's
+  task deactivation, which never deletes — do not "fix" one to match the
+  other.
+- **G4 — D5 headline copy corrected (amends D5).** DESIGN.md's decision log
+  (2026-07-31, board round 1) rejected "you probably did not know about" in
+  favor of "commonly missed" framing, on record, because the product cannot
+  verify what any individual user already knew. D5's own worked example
+  still specified the rejected copy; corrected in place above. Approach C's
+  illustrative pitch line ("Your home has 27 tasks you didn't know about",
+  line 201) carries the same contradiction but is phase-2 and not a locked
+  copy spec; realign it during that phase's own design pass, not here.
+- **G5 — Premise-1 measurement instrument (amends Blocker 4, C4, Y9).**
+  UXR's R2 (five 30-minute pre-exposure interviews: what do you think your
+  home needs, before showing anything) is the discovery-claim instrument.
+  C4's "which were you already doing?" checklist is demoted to a
+  headline-personalization input only — it still drives result-page copy,
+  but it is never reported as premise-1 evidence.
+- **G6 — Trust-line disclaimer placement (amends Conflict 4, D10).** The
+  safety disclaimer is a third sentence appended inline to the existing
+  trust line, not a new element. D2's one-full-weight-button rule is
+  unaffected.
+- **G7 — Concierge n=10 not adopted (amends Conflict 2).** G5's R2 already
+  closes the interview gap Conflict 2 was raised to fix; running both is
+  redundant hours for overlapping signal. Revisit only if R2's five calls
+  come back ambiguous.
+- **G8 — Core-build ticketing deferred (amends Blocker 1).** Ticketing the
+  actual product build (wizard, plan builder, `schedule.ts`, ICS generator,
+  result/task pages, the ten surfaces) is real and still open, but it is a
+  separate planning pass (a fresh `/plan-eng-review` or `/autoplan`), not
+  part of this grilling session.
 
 ## GSTACK REVIEW REPORT
 
