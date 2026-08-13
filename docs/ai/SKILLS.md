@@ -24,6 +24,7 @@ here: a hand-maintained copy drifts on every pack update.
 - sales — pipeline, pricing experiments, capacity math
 - support — help docs, incident comms, feedback triage into Backlog
 - data — metric design, experiment analysis, owns HEALTH-METRICS.md
+- architect — system design, trade-off analysis, decision records, scalability
 
 Review panel (the 7 voices /prd-review-panel spawns in parallel):
 
